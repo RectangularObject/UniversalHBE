@@ -7,15 +7,11 @@ if not game:IsLoaded() then
 	game.Loaded:Wait()
 end
 
-if not isfile("Hitboxexpander\\KickBypass.txt") then
-	local reasons = {}
+if not isfile("FurryHBE\\KickBypass.txt") then
 	if not syn then
-		table.insert(reasons, "Not using Synapse X")
-	end
-	if #reasons > 0 then
-		makefolder("Hitboxexpander")
-		writefile("Hitboxexpander\\KickBypass.txt", "")
-		game:GetService("Players").LocalPlayer:Kick("\n\nWarning: Your exploit is not supported.\nReason(s): ".. tostring(table.unpack(reasons)) .. "\n\nYou will bypass this kick from now on, but don't expect the script to completely work. Don't be surprised if your game crashes either.")
+		game:GetService("Players").LocalPlayer:Kick("Your exploit is not supported. You will bypass this kick from now on, but don't expect the script to completely work. Buy Synapse X")
+		makefolder("FurryHBE")
+		writefile("FurryHBE\\KickBypass.txt", "")
 		return
 	end
 end
