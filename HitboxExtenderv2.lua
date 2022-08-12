@@ -1,3 +1,7 @@
+if _G.FurryHBELoaded then
+	return
+end
+
 _G.FurryHBELoaded = false
 if not game:IsLoaded() then
 	game.Loaded:Wait()
