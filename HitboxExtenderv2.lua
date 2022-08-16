@@ -9,11 +9,15 @@ end
 
 if not isfile("FurryHBE\\KickBypass.txt") then
 	if not syn then
-		game:GetService("Players").LocalPlayer:Kick("Your exploit is not supported. You will bypass this kick from now on, but don't expect the script to completely work. Buy Synapse X")
+		game:GetService("Players").LocalPlayer:Kick("Your exploit is not officially supported. You will bypass this kick from now on, but don't expect the script to completely work.")
 		makefolder("FurryHBE")
 		writefile("FurryHBE\\KickBypass.txt", "")
 		return
 	end
+end
+
+if KRNL_LOADED then
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/zzerexx/scripts/main/SynapseToKrnl.lua"))()
 end
 
 if not getgenv().MTAPIMutex then
