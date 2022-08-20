@@ -17,7 +17,7 @@ if not isfile("FurryHBE\\KickBypass.txt") then
 end
 
 if KRNL_LOADED then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/zzerexx/scripts/main/SynapseToKrnl.lua"))()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/zzerexx/scripts/main/SynapseToKrnl.lua"))()
 end
 
 if not getgenv().MTAPIMutex then
@@ -35,8 +35,8 @@ local Phys = game:GetService("PhysicsService")
 local Runs = game:GetService("RunService")
 local lPlayer = Players.LocalPlayer
 local players = {}
-local furryCollision = Phys:CreateCollisionGroup("furryCollisions")
 
+Phys:CreateCollisionGroup("furryCollisions")
 for _, v in pairs(Phys:GetCollisionGroups()) do
 	Phys:CollisionGroupSetCollidable(Phys:GetCollisionGroupName(v.id), "furryCollisions", false)
 end
@@ -353,7 +353,7 @@ local function addPlayer(player)
 			defaultProperties.CollisionGroupId = value
 			collisionGroupHook:Modify("CollisionGroupId", defaultProperties.CollisionGroupId)
 			if Toggles.expanderToggled.Value and not Toggles.collisionsToggled.Value then
-				return furryCollision
+				return Phys:GetCollisionGroupId("furryCollisions")
 			end
 			return defaultProperties.CollisionGroupId
 		end)
@@ -381,7 +381,7 @@ local function addPlayer(player)
 				if part.Name == "Head" or part.Name == "HumanoidRootPart" then
 					part.CanCollide = false
 				else
-					part.CollisionGroupId = furryCollision
+					part.CollisionGroupId = Phys:GetCollisionGroupId("furryCollisions")
 				end
 			else
 				part.CanCollide = playerIdx.defaultProperties[part.Name].CanCollide
