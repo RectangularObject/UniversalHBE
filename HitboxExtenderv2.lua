@@ -159,7 +159,7 @@ local function addPlayer(player)
 				return true
 			end
 		elseif game.GameId == 1934496708 then -- Project: SCP
-			if player.Team == "LOBBY" or lPlayer.Team == player.Team then
+			if player.Team.Name == "LOBBY" or lPlayer.Team == player.Team then
 				return true
 			end
 			if lPlayer.PlayerGui.MainUI.Frame.EndScreen.AnchorPoint.X < 1 then
@@ -222,6 +222,19 @@ local function addPlayer(player)
 			if sus then
 				return true
 			end
+			if selfTeam == playerTeam then
+				return true
+			end
+		elseif game.PlaceId == 8770868695 then -- Anomalous Activities: First Contact
+			if player.Team.Name == "Dead" or player.Team.Name == "Inactive" then
+				return true
+			end
+			local selfTeam
+			local playerTeam
+			pcall(function()
+				selfTeam = lPlayer.Character.Parent
+				playerTeam = playerIdx.Char.Parent
+			end)
 			if selfTeam == playerTeam then
 				return true
 			end
