@@ -377,6 +377,7 @@ local function addPlayer(player)
 				if defaultProperties[property] ~= part[property] then
 					defaultProperties[property] = part[property]
 				end
+				playerIdx:Update()
 			end
 		end)
 	end
