@@ -312,6 +312,7 @@ local function addPlayer(player)
 
 	-- hbe
 
+	local debounce = false
 	local function setup(part)
 		playerIdx.defaultProperties[part.Name] = {}
 		local defaultProperties = playerIdx.defaultProperties[part.Name]
@@ -370,6 +371,14 @@ local function addPlayer(player)
 			end
 			return defaultProperties.CollisionGroupId
 		end)
+		part.Changed:Connect(function(property) -- __namecall isn't replicated to the client when called from a serverscript
+			if debounce then return end
+			if defaultProperties[property] then
+				if defaultProperties[property] ~= part[property] then
+					defaultProperties[property] = part[property]
+				end
+			end
+		end)
 	end
 
 	local function isActive(part)
@@ -404,11 +413,11 @@ local function addPlayer(player)
 			part.Size = Vector3.new(size, size, size)
 			part.Transparency = Options.expanderTransparency.Value
 		else
-			part.Size = playerIdx.defaultProperties[part.Name].Size or Vector3.new(2, 1, 1)
-			part.Transparency = playerIdx.defaultProperties[part.Name].Transparency or 0
-			part.Massless = playerIdx.defaultProperties[part.Name].Massless or false
-			part.CanCollide = playerIdx.defaultProperties[part.Name].CanCollide or true
-			part.CollisionGroupId = playerIdx.defaultProperties[part.Name].CollisionGroupId or 0
+			part.Size = playerIdx.defaultProperties[part.Name].Size
+			part.Transparency = playerIdx.defaultProperties[part.Name].Transparency
+			part.Massless = playerIdx.defaultProperties[part.Name].Massless
+			part.CanCollide = playerIdx.defaultProperties[part.Name].CanCollide
+			part.CollisionGroupId = playerIdx.defaultProperties[part.Name].CollisionGroupId
 		end
 	end
 
@@ -416,11 +425,13 @@ local function addPlayer(player)
 		if not playerIdx.Char then
 			return
 		end
+		debounce = true
 		for _, v in pairs(playerIdx.Char:GetChildren()) do
 			if v:IsA("BasePart") then
 				resize(v)
 			end
 		end
+		debounce = false
 	end
 
 	-- esp
