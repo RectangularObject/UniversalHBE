@@ -161,7 +161,7 @@ local function addPlayer(player)
 			end
 		elseif game.GameId == 1934496708 then -- Project: SCP
 			if not player.Team then return true end
-			if player.Team.Name == "LOBBY" or lPlayer.Team == player.Team then
+			if player.Team.Name == "LOBBY" or lPlayer.Team.Name == "LOBBY" or lPlayer.Team == player.Team then
 				return true
 			end
 			if Workspace.FriendlyFire.Value then
