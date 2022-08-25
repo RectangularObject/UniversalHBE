@@ -33,6 +33,7 @@ local Teams = game:GetService("Teams")
 local Players = game:GetService("Players")
 local Phys = game:GetService("PhysicsService")
 local Runs = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 local lPlayer = Players.LocalPlayer
 local players = {}
 
@@ -159,10 +160,11 @@ local function addPlayer(player)
 				return true
 			end
 		elseif game.GameId == 1934496708 then -- Project: SCP
+			if not player.Team then return true end
 			if player.Team.Name == "LOBBY" or lPlayer.Team == player.Team then
 				return true
 			end
-			if lPlayer.PlayerGui.MainUI.Frame.EndScreen.AnchorPoint.X < 1 then
+			if Workspace.FriendlyFire.Value then
 				return false
 			end
 			local selfTeam
@@ -185,42 +187,35 @@ local function addPlayer(player)
 				return true
 			end
 		elseif game.PlaceId == 2622527242 then -- SCP rBreach
-			local sus = false
+			if not player.Team then return true end
+			if player.Team.Name == "Intro" or player.Team.Name == "Spectator" or player.Team.Name == "Not Playing" or lPlayer.Team == player.Team then
+				return true
+			end
 			local selfTeam
 			local playerTeam
-			-- this code errors with "team doesn't exist" or "team doesn't actually have a name" and I don't want to deal with roblox's shitty engine
-			pcall(function() -- slap a pcall on it and we're good to go
-				if player.Team.Name == "Intro" or player.Team.Name == "Spectator" or player.Team.Name == "Not Playing" or lPlayer.Team == player.Team then
-					sus = true
-					return
-				end
-				if lPlayer.Team.Name == "Class-D Personnel" or lPlayer.Team.Name == "Chaos Insurgency" then
-					selfTeam = "Chads"
-				end
-				if lPlayer.Team.Name == "Facility Personnel" or lPlayer.Team.Name == "Security Department" or lPlayer.Team.Name == "Mobile Task Force" or lPlayer.Team.Name == "Unusual Incidents Unit" then
-					selfTeam = "Crayon Eaters"
-				end
-				if lPlayer.Team.Name == "SCPs" or lPlayer.Team.Name == "Serpent's Hand" then
-					selfTeam = "Menaces to Society"
-				end
-				if lPlayer.Team.Name == "Global Occult Coalition" or lPlayer.Team.Name == "Unusual Incidents Unit" then
-					selfTeam = "Who?"
-				end
-				if player.Team.Name == "Class-D Personnel" or player.Team.Name == "Chaos Insurgency" then
-					playerTeam = "Chads"
-				end
-				if player.Team.Name == "Facility Personnel" or player.Team.Name == "Security Department" or player.Team.Name == "Mobile Task Force" or player.Team.Name == "Unusual Incidents Unit" then
-					playerTeam = "Crayon Eaters"
-				end
-				if player.Team.Name == "SCPs" or player.Team.Name == "Serpent's Hand" then
-					playerTeam = "Menaces to Society"
-				end
-				if player.Team.Name == "Global Occult Coalition" or player.Team.Name == "Unusual Incidents Unit" then
-					playerTeam = "Who?"
-				end
-			end)
-			if sus then
-				return true
+			if lPlayer.Team.Name == "Class-D Personnel" or lPlayer.Team.Name == "Chaos Insurgency" then
+				selfTeam = "Chads"
+			end
+			if lPlayer.Team.Name == "Facility Personnel" or lPlayer.Team.Name == "Security Department" or lPlayer.Team.Name == "Mobile Task Force" or lPlayer.Team.Name == "Unusual Incidents Unit" then
+				selfTeam = "Crayon Eaters"
+			end
+			if lPlayer.Team.Name == "SCPs" or lPlayer.Team.Name == "Serpent's Hand" then
+				selfTeam = "Menaces to Society"
+			end
+			if lPlayer.Team.Name == "Global Occult Coalition" or lPlayer.Team.Name == "Unusual Incidents Unit" then
+				selfTeam = "Who?"
+			end
+			if player.Team.Name == "Class-D Personnel" or player.Team.Name == "Chaos Insurgency" then
+				playerTeam = "Chads"
+			end
+			if player.Team.Name == "Facility Personnel" or player.Team.Name == "Security Department" or player.Team.Name == "Mobile Task Force" or player.Team.Name == "Unusual Incidents Unit" then
+				playerTeam = "Crayon Eaters"
+			end
+			if player.Team.Name == "SCPs" or player.Team.Name == "Serpent's Hand" then
+				playerTeam = "Menaces to Society"
+			end
+			if player.Team.Name == "Global Occult Coalition" or player.Team.Name == "Unusual Incidents Unit" then
+				playerTeam = "Who?"
 			end
 			if selfTeam == playerTeam then
 				return true
@@ -452,7 +447,7 @@ local function addPlayer(player)
 		if Toggles.espNameToggled.Value and playerIdx.Char then
 			local target = FindFirstChildMatching(playerIdx.Char, "Torso")
 			if target then
-				local pos, onScreen = game:GetService("Workspace").CurrentCamera:WorldToViewportPoint(target.Position)
+				local pos, onScreen = Workspace.CurrentCamera:WorldToViewportPoint(target.Position)
 				if onScreen and not isIgnored() and not isDead() then
 					if Options.espNameType.Value == "Display Name" then
 						nameEsp.Text = player.DisplayName
@@ -595,6 +590,13 @@ local function addPlayer(player)
 	if game.PlaceId == 6172932937 then -- Energy Assault
 		local ragdolled = player:WaitForChild("ragdolled")
 		ragdolled.Changed:Connect(function()
+			playerIdx:Update()
+			playerIdx:UpdateChams()
+		end)
+	end
+	if game.GameId == 1934496708 then
+		local ff = Workspace:WaitForChild("FriendlyFire")
+		ff.Changed:Connect(function()
 			playerIdx:Update()
 			playerIdx:UpdateChams()
 		end)
