@@ -1,4 +1,4 @@
-if _G.FurryHBELoaded then
+if _G.FurryHBELoaded ~= nil then
 	return
 end
 
@@ -34,6 +34,8 @@ local Players = game:GetService("Players")
 local Phys = game:GetService("PhysicsService")
 local Runs = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
+local Camera = Workspace.CurrentCamera
+local WorldToViewportPoint = Camera.WorldToViewportPoint
 local lPlayer = Players.LocalPlayer
 local players = {}
 
@@ -43,9 +45,7 @@ for _, v in pairs(Phys:GetCollisionGroups()) do
 end
 
 local function updatePlayers()
-	if not _G.FurryHBELoaded then
-		return
-	end
+	if not _G.FurryHBELoaded then return end
 	for _, v in pairs(players) do
 		task.spawn(function()
 			v:Update()
@@ -54,7 +54,17 @@ local function updatePlayers()
 	end
 end
 
-local mainWindow = Library:CreateWindow("Squares's Hitbox Expander - now with 75% less lag")
+Runs.RenderStepped:Connect(function()
+	if not _G.FurryHBELoaded then return end
+	Camera = Workspace.CurrentCamera
+	for _, v in pairs(players) do
+		task.spawn(function()
+			v:UpdateESP()
+		end)
+	end
+end)
+
+local mainWindow = Library:CreateWindow("Squares's Hitbox Expander")
 local mainTab = mainWindow:AddTab("Main")
 local mainGroupbox = mainTab:AddLeftGroupbox("Hitbox Expander")
 local espGroupbox = mainTab:AddLeftGroupbox("ESP")
@@ -110,7 +120,7 @@ end
 local function addPlayer(player)
 	table.insert(Options.ignorePlayerList.Values, player.Name)
 	updateList(Options.ignorePlayerList)
-	players[player] = { Char = player.Character, defaultProperties = {}, espLoop = nil, removing = false }
+	players[player] = { Char = player.Character, defaultProperties = {} }
 	local playerIdx = players[player]
 
 	local function isTeammate()
@@ -160,12 +170,12 @@ local function addPlayer(player)
 				return true
 			end
 		elseif game.GameId == 1934496708 then -- Project: SCP
+			if Workspace.FriendlyFire.Value then
+				return false
+			end
 			if not player.Team then return true end
 			if player.Team.Name == "LOBBY" or lPlayer.Team.Name == "LOBBY" or lPlayer.Team == player.Team then
 				return true
-			end
-			if Workspace.FriendlyFire.Value then
-				return false
 			end
 			local selfTeam
 			local playerTeam
@@ -284,7 +294,7 @@ local function addPlayer(player)
 	end
 
 	local function isIgnored()
-		if not playerIdx.Char or playerIdx.removing then
+		if not playerIdx.Char then
 			return true
 		end
 		if Toggles.ignoreOwnTeamToggled.Value then
@@ -433,6 +443,7 @@ local function addPlayer(player)
 	-- esp
 
 	local function FindFirstChildMatching(parent, name)
+		if not parent then return nil end
 		for _,v in pairs(parent:GetChildren()) do
 			if string.match(v.Name, name) then
 				return v
@@ -440,43 +451,34 @@ local function addPlayer(player)
 		end
 	end
 
-	local nameEsp = Drawing.new("Text")
-	nameEsp.Center = true
-	nameEsp.Outline = true
-	playerIdx.espLoop = Runs.RenderStepped:Connect(function()
-		if Toggles.espNameToggled.Value and playerIdx.Char then
-			local target = FindFirstChildMatching(playerIdx.Char, "Torso")
-			if target then
-				local pos, onScreen = Workspace.CurrentCamera:WorldToViewportPoint(target.Position)
-				if onScreen and not isIgnored() and not isDead() then
-					if Options.espNameType.Value == "Display Name" then
-						nameEsp.Text = player.DisplayName
-					else
-						nameEsp.Text = player.Name
-					end
-					if Toggles.espNameUseTeamColor.Value then
-						nameEsp.Color = player.TeamColor.Color
-					else
-						nameEsp.Color = Options.espNameColor1.Value
-					end
-					nameEsp.OutlineColor = Options.espNameColor2.Value
-					nameEsp.Position = Vector2.new(pos.X, pos.Y)
-					nameEsp.Size = 1000 / pos.Z + 10
-					nameEsp.Visible = true
+	local nameEsp = Drawing.new("Text"); nameEsp.Center = true; nameEsp.Outline = true
+	function playerIdx:UpdateESP()
+		if not Toggles.espNameToggled.Value or not playerIdx.Char or isIgnored() or isDead() then nameEsp.Visible = false return end
+		local target = FindFirstChildMatching(playerIdx.Char, "Torso")
+		if target then
+			local pos, vis = WorldToViewportPoint(Camera, target.Position)
+			if vis then
+				if Options.espNameType.Value == "Display Name" then
+					nameEsp.Text = player.DisplayName
 				else
-					nameEsp.Visible = false
+					nameEsp.Text = player.Name
 				end
+				if Toggles.espNameUseTeamColor.Value then
+					nameEsp.Color = player.TeamColor.Color
+				else
+					nameEsp.Color = Options.espNameColor1.Value
+				end
+				nameEsp.OutlineColor = Options.espNameColor2.Value
+				nameEsp.Position = Vector2.new(pos.X, pos.Y)
+				nameEsp.Size = 1000 / pos.Z + 10
+				nameEsp.Visible = true
 			else
 				nameEsp.Visible = false
 			end
-		else
-			nameEsp.Visible = false
 		end
-	end)
+	end
 
-	local chams = Instance.new("Highlight")
-	chams.Parent = game:GetService("CoreGui")
-
+	local chams = Instance.new("Highlight");chams.Parent = game:GetService("CoreGui")
 	function playerIdx:UpdateChams()
 		if not playerIdx.Char then
 			return
@@ -500,7 +502,6 @@ local function addPlayer(player)
 	end
 
 	function playerIdx:DeleteVisuals()
-		playerIdx.espLoop:Disconnect()
 		nameEsp:Remove()
 		chams:Destroy()
 	end
@@ -594,7 +595,7 @@ local function addPlayer(player)
 			playerIdx:UpdateChams()
 		end)
 	end
-	if game.GameId == 1934496708 then
+	if game.GameId == 1934496708 then -- Project: SCP
 		local ff = Workspace:WaitForChild("FriendlyFire")
 		ff.Changed:Connect(function()
 			playerIdx:Update()
@@ -655,6 +656,7 @@ lPlayer.CharacterAdded:Connect(function()
 	updatePlayers()
 end)
 
+-- This is a very very very very very very rare bug that I encountered, so here's a button that fixes it
 emergencyGroupbox:AddButton("Fix Missing Players", function()
 	local found = 0
 	for _, player in ipairs(Players:GetPlayers()) do
