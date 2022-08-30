@@ -389,8 +389,9 @@ local function addPlayer(player)
 
 	local function isActive(part)
 		local name = part.Name
-		for _, v in pairs(Options.expanderPartList:GetActiveValues()) do
-			if string.match(name, v) or (v == "Custom Part" and string.match(name, Options.customPartName.Value) and part:IsA("BasePart")) or (v == "Left Arm" and string.match(name, "Left") and (string.match(name, "Arm") or string.match(name, "Hand"))) or (v == "Right Arm" and string.match(name, "Right") and (string.match(name, "Arm") or string.match(name, "Hand"))) or (v == "Left Leg" and string.match(name, "Left") and (string.match(name, "Leg") or string.match(name, "Foot"))) or (v == "Right Leg" and string.match(name, "Right") and (string.match(name, "Leg") or string.match(name, "Foot"))) then
+		local active = Options.expanderPartList:GetActiveValues()
+		for _, v in pairs(active) do
+			if string.match(name, v) or (v == "Custom Part" and string.match(name, Options.customPartName.Value)) or (v == "Left Arm" and string.match(name, "Left") and (string.match(name, "Arm") or string.match(name, "Hand"))) or (v == "Right Arm" and string.match(name, "Right") and (string.match(name, "Arm") or string.match(name, "Hand"))) or (v == "Left Leg" and string.match(name, "Left") and (string.match(name, "Leg") or string.match(name, "Foot"))) or (v == "Right Leg" and string.match(name, "Right") and (string.match(name, "Leg") or string.match(name, "Foot"))) then
 				return true
 			end
 		end
