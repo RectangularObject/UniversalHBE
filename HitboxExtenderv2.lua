@@ -246,8 +246,10 @@ local function addPlayer(player)
 				return true
 			end
 		elseif game.PlaceId == 5884786982 then -- Escape The Darkness
-			if playerIdx.Char.Name ~= "Killer" then
-				return true
+			if lPlayer.Character.Name ~= "Killer" then
+				if playerIdx.Char.Name ~= "Killer" then
+					return true
+				end
 			end
 		elseif lPlayer.Team == player.Team then
 			return true
