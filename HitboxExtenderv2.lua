@@ -99,6 +99,7 @@ espGroupbox:AddSlider("espHighlightOutlineTransparency", { Text = "Chams Outline
 miscGroupbox:AddLabel("Toggle UI"):AddKeyPicker("menuKeybind", { Default = "RightControl", NoUI = true, Text = "Menu Keybind" })
 miscGroupbox:AddLabel("Force Update"):AddKeyPicker("forceUpdateKeybind", { Default = "RightAlt", NoUI = true, Text = "Force Update Keybind"})
 Options.forceUpdateKeybind:OnClick(updatePlayers)
+Library.ToggleKeybind = Options.menuKeybind
 
 ignoresGroupbox:AddToggle("expanderSitCheck", { Text = "Ignore Sitting Players" }):OnChanged(updatePlayers)
 ignoresGroupbox:AddToggle("expanderFFCheck", { Text = "Ignore Forcefielded Players" }):OnChanged(updatePlayers)
@@ -111,6 +112,7 @@ ignoresGroupbox:AddDropdown("ignoreTeamList", { Text = "Teams", AllowNull = true
 collisionsGroupbox:AddToggle("collisionsToggled", { Text = "Enable Collisions" }):OnChanged(updatePlayers)
 
 SaveManager:BuildConfigSection(mainTab)
+SaveManager:LoadAutoloadConfig()
 
 local function updateList(list)
 	list:SetValues()
@@ -241,6 +243,10 @@ local function addPlayer(player)
 				playerTeam = playerIdx.Char.Parent
 			end)
 			if selfTeam == playerTeam then
+				return true
+			end
+		elseif game.PlaceId == 5884786982 then -- Escape The Darkness
+			if playerIdx.Char.Name ~= "Killer" then
 				return true
 			end
 		elseif lPlayer.Team == player.Team then
@@ -690,8 +696,6 @@ if game.PlaceId == 111311599 then
 	anticheat.Disabled = true
 end
 
-Library.ToggleKeybind = Options.menuKeybind
-SaveManager:LoadAutoloadConfig()
 _G.FurryHBELoaded = true
 updatePlayers()
 Library:Notify("hai :3")
