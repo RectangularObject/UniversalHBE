@@ -251,6 +251,11 @@ local function addPlayer(player)
 					return true
 				end
 			end
+		elseif game.GameId == 2162282815 then -- Rush Point
+			if not player:FindFirstChild("SelectedTeam") then return true end
+			if player.SelectedTeam.Value == lPlayer.SelectedTeam.Value then
+				return true
+			end
 		elseif lPlayer.Team == player.Team then
 			return true
 		end
@@ -609,6 +614,19 @@ local function addPlayer(player)
 		ff.Changed:Connect(function()
 			playerIdx:Update()
 			playerIdx:UpdateChams()
+		end)
+	end
+	if game.GameId == 2162282815 then -- Rush Point
+		local gamePlayers = Workspace.MapFolder.Players
+		for _,v in pairs(gamePlayers:GetChildren()) do
+			if v.Name == player.Name then
+				playerIdx.Char = v
+			end
+		end
+		gamePlayers.ChildAdded:Connect(function(v)
+			if v.Name == player.Name then
+				playerIdx.Char = v
+			end
 		end)
 	end
 end
