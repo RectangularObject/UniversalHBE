@@ -489,6 +489,8 @@ local function addPlayer(player)
 			else
 				nameEsp.Visible = false
 			end
+		else
+			nameEsp.Visible = false
 		end
 	end
 
