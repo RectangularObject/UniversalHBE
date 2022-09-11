@@ -16,8 +16,10 @@ if not isfile("FurryHBE\\KickBypass.txt") then
 	end
 end
 
-if KRNL_LOADED then
+if KRNL_LOADED then -- KRNL
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/zzerexx/scripts/main/SynapseToKrnl.lua"))()
+elseif import then -- Scriptware
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/zzerexx/scripts/main/SynapseToScriptWare.lua", true))()
 end
 
 if not getgenv().MTAPIMutex then
@@ -31,17 +33,19 @@ SaveManager:SetFolder("FurryHBE")
 
 local Teams = game:GetService("Teams")
 local Players = game:GetService("Players")
-local Phys = game:GetService("PhysicsService")
-local Runs = game:GetService("RunService")
+local PhysicsService = game:GetService("PhysicsService")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Camera = Workspace.CurrentCamera
 local WorldToViewportPoint = Camera.WorldToViewportPoint
 local lPlayer = Players.LocalPlayer
 local players = {}
+local teamModule = nil
 
-Phys:CreateCollisionGroup("furryCollisions")
-for _, v in pairs(Phys:GetCollisionGroups()) do
-	Phys:CollisionGroupSetCollidable(Phys:GetCollisionGroupName(v.id), "furryCollisions", false)
+PhysicsService:CreateCollisionGroup("furryCollisions")
+for _, v in pairs(PhysicsService:GetCollisionGroups()) do
+	PhysicsService:CollisionGroupSetCollidable(PhysicsService:GetCollisionGroupName(v.id), "furryCollisions", false)
 end
 
 local function updatePlayers()
@@ -49,12 +53,11 @@ local function updatePlayers()
 	for _, v in pairs(players) do
 		task.spawn(function()
 			v:Update()
-			v:UpdateChams()
 		end)
 	end
 end
 
-Runs.RenderStepped:Connect(function()
+RunService:BindToRenderStep("furryWalls", Enum.RenderPriority.Camera.Value - 1, function()
 	if not _G.FurryHBELoaded then return end
 	Camera = Workspace.CurrentCamera
 	for _, v in pairs(players) do
@@ -119,6 +122,13 @@ local function updateList(list)
 	list:Display()
 end
 
+if game.GameId == 504234221 then -- Vampire Hunters 3
+	teamModule = require(ReplicatedStorage.Scripts.Modules.PlayerModule)
+end
+if game.GameId == 1934496708 then -- Project: SCP
+	teamModule = require(Workspace:WaitForChild("Teams"))
+end
+
 local function addPlayer(player)
 	table.insert(Options.ignorePlayerList.Values, player.Name)
 	updateList(Options.ignorePlayerList)
@@ -127,205 +137,113 @@ local function addPlayer(player)
 
 	local function isTeammate()
 		if game.GameId == 718936923 then -- Neighborhood War
-			local selfTeam
-			local playerTeam
-			pcall(function()
-				selfTeam = lPlayer.Character.HumanoidRootPart.Color
-				playerTeam = playerIdx.Char.HumanoidRootPart.Color
-			end)
-			if selfTeam == playerTeam then
-				return true
-			end
-		elseif game.PlaceId == 2158109152 then -- Weapon Kit
-			local friendly = playerIdx.Char:FindFirstChild("Friendly", true)
-			if friendly then
-				return true
-			end
+			if not lPlayer.Character or not playerIdx.Char or not playerIdx.Char:FindFirstChild("HumanoidRootPart") then return true end
+			return lPlayer.Character.HumanoidRootPart.Color == playerIdx.Char.HumanoidRootPart.Color
 		elseif game.PlaceId == 633284182 then -- Fireteam
-			local selfTeam
-			local playerTeam
-			local success
-			repeat
-				success = pcall(function()
-					selfTeam = lPlayer.PlayerData.TeamValue.Value
-					playerTeam = player.PlayerData.TeamValue.Value
-				end)
-				task.wait()
-			until success
-			if selfTeam == playerTeam then
-				return true
-			end
+			if not player:FindFirstChild("PlayerData") or not player.PlayerData:FindFirstChild("TeamValue") then return true end
+			return lPlayer.PlayerData.TeamValue.Value == player.PlayerData.TeamValue.Value
 		elseif game.PlaceId == 2029250188 then -- Q-Clash
-			local selfTeam
-			local playerTeam
-			pcall(function()
-				selfTeam = lPlayer.Character.Parent
-				playerTeam = playerIdx.Char.Parent
-			end)
-			if selfTeam == playerTeam then
-				return true
-			end
+			if not lPlayer.Character or not playerIdx.Char then return true end
+			return lPlayer.Character.Parent == playerIdx.Char.Parent
 		elseif game.PlaceId == 2978450615 then -- Paintball Reloaded
-			local selfTeam = getrenv()._G.PlayerProfiles.Data[lPlayer.Name].Team
-			local playerTeam = getrenv()._G.PlayerProfiles.Data[player.Name].Team
-			if selfTeam == playerTeam then
-				return true
-			end
+			return getrenv()._G.PlayerProfiles.Data[lPlayer.Name].Team == getrenv()._G.PlayerProfiles.Data[player.Name].Team
 		elseif game.GameId == 1934496708 then -- Project: SCP
-			if Workspace.FriendlyFire.Value then
-				return false
-			end
-			if not player.Team then return true end
-			if player.Team.Name == "LOBBY" or lPlayer.Team.Name == "LOBBY" or lPlayer.Team == player.Team then
-				return true
-			end
-			local selfTeam
-			local playerTeam
-			if string.match(lPlayer.Team.Name, "MTF") or lPlayer.Team.Name == "Security Chief" or lPlayer.Team.Name == "Facility Guard" or lPlayer.Team.Name == "Researcher" or lPlayer.Team.Name == "Janitor" then
-				selfTeam = "MTF"
-			elseif string.match(lPlayer.Team.Name, "CI") or lPlayer.Team.Name == "Class-D" then
-				selfTeam = "CD/CI"
-			elseif string.match(lPlayer.Team.Name, "SCP") then
-				selfTeam = "SCP"
-			end
-			if string.match(player.Team.Name, "MTF") or player.Team.Name == "Security Chief" or player.Team.Name == "Facility Guard" or player.Team.Name == "Researcher" or player.Team.Name == "Janitor" then
-				playerTeam = "MTF"
-			elseif string.match(player.Team.Name, "CI") or player.Team.Name == "Class-D" then
-				playerTeam = "CD/CI"
-			elseif string.match(player.Team.Name, "SCP") then
-				playerTeam = "SCP"
-			end
-			if selfTeam == playerTeam then
-				return true
-			end
+			if Workspace.FriendlyFire.Value then return false end
+			return (not player.Team or player.Team.Name == "LOBBY" or lPlayer.Team.Name == "LOBBY" or player.Team.Name == "Admin" or lPlayer.Team == player.Team) or
+			teamModule[lPlayer.Team.Name] == teamModule[player.Team.Name] or
+			((teamModule[lPlayer.Team.Name] == "CI" and teamModule[player.Team.Name] == "CD") or
+			(teamModule[player.Team.Name] == "CI" and teamModule[lPlayer.Team.Name] == "CD"))
 		elseif game.PlaceId == 2622527242 then -- SCP rBreach
-			if not player.Team then return true end
-			if player.Team.Name == "Intro" or player.Team.Name == "Spectator" or player.Team.Name == "Not Playing" or lPlayer.Team == player.Team then
-				return true
-			end
+			if not player.Team or player.Team.Name == "Intro" or player.Team.Name == "Spectator" or player.Team.Name == "Not Playing" or lPlayer.Team == player.Team then return true end
+			local lPlayerTeamName = lPlayer.Team.Name
+			local playerTeamName = player.Team.Name
 			local selfTeam
 			local playerTeam
-			if lPlayer.Team.Name == "Class-D Personnel" or lPlayer.Team.Name == "Chaos Insurgency" then
+			if lPlayerTeamName == "Class-D Personnel" or lPlayerTeamName == "Chaos Insurgency" then
 				selfTeam = "Chads"
 			end
-			if lPlayer.Team.Name == "Facility Personnel" or lPlayer.Team.Name == "Security Department" or lPlayer.Team.Name == "Mobile Task Force" or lPlayer.Team.Name == "Unusual Incidents Unit" then
+			if lPlayerTeamName == "Facility Personnel" or lPlayerTeamName == "Security Department" or lPlayerTeamName == "Mobile Task Force" then
 				selfTeam = "Crayon Eaters"
 			end
-			if lPlayer.Team.Name == "SCPs" or lPlayer.Team.Name == "Serpent's Hand" then
+			if lPlayerTeamName == "SCPs" or lPlayerTeamName == "Serpent's Hand" then
 				selfTeam = "Menaces to Society"
 			end
-			if lPlayer.Team.Name == "Global Occult Coalition" or lPlayer.Team.Name == "Unusual Incidents Unit" then
+			if lPlayerTeamName == "Global Occult Coalition" then
 				selfTeam = "Who?"
 			end
-			if player.Team.Name == "Class-D Personnel" or player.Team.Name == "Chaos Insurgency" then
+			if lPlayerTeamName == "Unusual Incidents Unit" then
+				selfTeam = "Who2?"
+			end
+			if playerTeamName == "Class-D Personnel" or playerTeamName == "Chaos Insurgency" then
 				playerTeam = "Chads"
 			end
-			if player.Team.Name == "Facility Personnel" or player.Team.Name == "Security Department" or player.Team.Name == "Mobile Task Force" or player.Team.Name == "Unusual Incidents Unit" then
+			if playerTeamName == "Facility Personnel" or playerTeamName == "Security Department" or playerTeamName == "Mobile Task Force" then
 				playerTeam = "Crayon Eaters"
 			end
-			if player.Team.Name == "SCPs" or player.Team.Name == "Serpent's Hand" then
+			if playerTeamName == "SCPs" or playerTeamName == "Serpent's Hand" then
 				playerTeam = "Menaces to Society"
 			end
-			if player.Team.Name == "Global Occult Coalition" or player.Team.Name == "Unusual Incidents Unit" then
+			if playerTeamName == "Global Occult Coalition" then
 				playerTeam = "Who?"
 			end
-			if selfTeam == playerTeam then
-				return true
+			if playerTeamName == "Unusual Incidents Unit" then
+				selfTeam = "Who2?"
 			end
-		elseif game.PlaceId == 8770868695 then -- Anomalous Activities: First Contact
-			if player.Team.Name == "Dead" or player.Team.Name == "Inactive" then
-				return true
-			end
-			local selfTeam
-			local playerTeam
-			pcall(function()
-				selfTeam = lPlayer.Character.Parent
-				playerTeam = playerIdx.Char.Parent
-			end)
-			if selfTeam == playerTeam then
-				return true
-			end
-		elseif game.PlaceId == 5884786982 then -- Escape The Darkness
-			if lPlayer.Character.Name ~= "Killer" then
-				if playerIdx.Char.Name ~= "Killer" then
+			if selfTeam == "Who2?" or playerTeam == "Who2?" then
+				if selfTeam == "Crayon Eaters" or playerTeam == "Crayon Eaters" or selfTeam == "Who?" or playerTeam == "Who?" then
 					return true
 				end
 			end
+			return selfTeam == playerTeam
+		elseif game.PlaceId == 8770868695 then -- Anomalous Activities: First Contact
+			if not lPlayer.Character or not playerIdx.Char or not player.Team or player.Team.Name == "Dead" or player.Team.Name == "Inactive" then return true end
+			return lPlayer.Character.Parent == playerIdx.Char.Parent
+		elseif game.PlaceId == 5884786982 then -- Escape The Darkness
+			if not lPlayer.Character or not playerIdx.Char then return true end
+			return lPlayer.Character.name ~= "Killer" and playerIdx.Char.Name ~= "Killer"
 		elseif game.GameId == 2162282815 then -- Rush Point
 			if not player:FindFirstChild("SelectedTeam") then return true end
-			if player.SelectedTeam.Value == lPlayer.SelectedTeam.Value then
-				return true
-			end
-		elseif lPlayer.Team == player.Team then
-			return true
+			return player.SelectedTeam.Value == lPlayer.SelectedTeam.Value
+		elseif game.PlaceId == 1240644540 then -- Vampire Hunters 3
+			if not teamModule or not teamModule.IsPlayerSurvivor then return true end
+			return teamModule.IsPlayerSurvivor(nil, player) == true and teamModule.IsPlayerSurvivor(nil, lPlayer) == true
+		elseif game.PlaceId == 10236714118 then -- Return of Humans vs Zombies
+			if not player:FindFirstChild("PlayerData") or not player.PlayerData:FindFirstChild("Team") then return true end
+			return lPlayer.PlayerData.Team.Value == player.PlayerData.Team.Value
 		end
-		return false
+		return lPlayer.Team == player.Team
 	end
 
 	local function isDead()
-		if not playerIdx.Char then
-			return true
-		end
+		if not playerIdx.Char then return true end
 		local humanoid = playerIdx.Char:FindFirstChildWhichIsA("Humanoid")
 		if game.PlaceId == 6172932937 then -- Energy Assault
-			if player.ragdolled.Value then
-				return true
-			end
+			return player.ragdolled.Value
 		elseif game.GameId == 718936923 then -- Neighborhood War
-			if playerIdx.Char:FindFirstChild("Dead") then
-				return true
-			end
+			return playerIdx.Char:FindFirstChild("Dead") ~= nil
 		end
-		if humanoid and humanoid:GetState() == Enum.HumanoidStateType.Dead then
-			return true
-		end
-		return false
+		return humanoid and humanoid:GetState() == Enum.HumanoidStateType.Dead
 	end
 
 	local function isSitting()
-		if Toggles.expanderSitCheck.Value then
-			local humanoid = playerIdx.Char:FindFirstChildWhichIsA("Humanoid")
-			if humanoid and humanoid.Sit then
-				return true
-			end
-		end
-		return false
+		local humanoid = playerIdx.Char:FindFirstChildWhichIsA("Humanoid")
+		return Toggles.expanderSitCheck.Value and humanoid ~= nil and humanoid.Sit == true
 	end
 
 	local function isFFed()
-		if Toggles.expanderFFCheck.Value then
-			if game.PlaceId == 4991214437 then -- town
-				if playerIdx.Char.Head.Material == Enum.Material.ForceField then
-					return true
-				end
-			end
-			local ff = playerIdx.Char:FindFirstChildWhichIsA("ForceField", true)
-			if ff and ff.Visible then
-				return true
-			end
+		if not playerIdx.Char then return false end
+		if game.PlaceId == 4991214437 then -- town
+			return playerIdx.Char.Head.Material == Enum.Material.ForceField
 		end
+		local ff = playerIdx.Char:FindFirstChildWhichIsA("ForceField")
+		return Toggles.expanderFFCheck.Value and playerIdx.Char ~= nil and ff ~= nil and ff.Visible == true
 	end
 
 	local function isIgnored()
-		if not playerIdx.Char then
-			return true
-		end
-		if Toggles.ignoreOwnTeamToggled.Value then
-			if isTeammate() then
-				return true
-			end
-		end
-		if Toggles.ignoreSelectedTeamsToggled.Value then
-			if table.find(Options.ignoreTeamList:GetActiveValues(), tostring(player.Team)) then
-				return true
-			end
-		end
-		if Toggles.ignoreSelectedPlayersToggled.Value then
-			if table.find(Options.ignorePlayerList:GetActiveValues(), tostring(player.Name)) then
-				return true
-			end
-		end
-		return false
+		if not playerIdx.Char then return true end
+		return Toggles.ignoreOwnTeamToggled.Value and isTeammate() or
+		Toggles.ignoreSelectedTeamsToggled.Value and table.find(Options.ignoreTeamList:GetActiveValues(), tostring(player.Team)) or
+		Toggles.ignoreSelectedPlayersToggled.Value and table.find(Options.ignorePlayerList:GetActiveValues(), tostring(player.Name))
 	end
 
 	-- hbe
@@ -385,7 +303,7 @@ local function addPlayer(player)
 			defaultProperties.CollisionGroupId = value
 			collisionGroupHook:Modify("CollisionGroupId", defaultProperties.CollisionGroupId)
 			if Toggles.expanderToggled.Value and not Toggles.collisionsToggled.Value then
-				return Phys:GetCollisionGroupId("furryCollisions")
+				return PhysicsService:GetCollisionGroupId("furryCollisions")
 			end
 			return defaultProperties.CollisionGroupId
 		end)
@@ -402,8 +320,7 @@ local function addPlayer(player)
 
 	local function isActive(part)
 		local name = part.Name
-		local active = Options.expanderPartList:GetActiveValues()
-		for _, v in pairs(active) do
+		for _, v in pairs(Options.expanderPartList:GetActiveValues()) do
 			if string.match(name, v) or (v == "Custom Part" and string.match(name, Options.customPartName.Value)) or (v == "Left Arm" and string.match(name, "Left") and (string.match(name, "Arm") or string.match(name, "Hand"))) or (v == "Right Arm" and string.match(name, "Right") and (string.match(name, "Arm") or string.match(name, "Hand"))) or (v == "Left Leg" and string.match(name, "Left") and (string.match(name, "Leg") or string.match(name, "Foot"))) or (v == "Right Leg" and string.match(name, "Right") and (string.match(name, "Leg") or string.match(name, "Foot"))) then
 				return true
 			end
@@ -423,7 +340,7 @@ local function addPlayer(player)
 				if part.Name == "Head" or part.Name == "HumanoidRootPart" then
 					part.CanCollide = false
 				else
-					part.CollisionGroupId = Phys:GetCollisionGroupId("furryCollisions")
+					part.CollisionGroupId = PhysicsService:GetCollisionGroupId("furryCollisions")
 				end
 			else
 				part.CanCollide = playerIdx.defaultProperties[part.Name].CanCollide
@@ -442,9 +359,7 @@ local function addPlayer(player)
 	end
 
 	function playerIdx:Update()
-		if not playerIdx.Char then
-			return
-		end
+		if not playerIdx.Char then return end
 		debounce = true
 		for _, v in pairs(playerIdx.Char:GetChildren()) do
 			if v:IsA("BasePart") then
@@ -466,52 +381,54 @@ local function addPlayer(player)
 	end
 
 	local nameEsp = Drawing.new("Text"); nameEsp.Center = true; nameEsp.Outline = true
+	local chams = Instance.new("Highlight");chams.Parent = game:GetService("CoreGui")
 	function playerIdx:UpdateESP()
-		if not Toggles.espNameToggled.Value or not playerIdx.Char or isIgnored() or isDead() then nameEsp.Visible = false return end
-		local target = FindFirstChildMatching(playerIdx.Char, "Torso")
-		if target then
-			local pos, vis = WorldToViewportPoint(Camera, target.Position)
-			if vis then
-				if Options.espNameType.Value == "Display Name" then
-					nameEsp.Text = player.DisplayName
+		if not playerIdx.Char or isIgnored() or isDead() then nameEsp.Visible = false; chams.Enabled = false return end
+		if Toggles.espNameToggled.Value then
+			local target = FindFirstChildMatching(playerIdx.Char, "Torso")
+			if target then
+				local pos, vis = WorldToViewportPoint(Camera, target.Position)
+				if vis then
+					if Options.espNameType.Value == "Display Name" then
+						nameEsp.Text = player.DisplayName
+					else
+						nameEsp.Text = player.Name
+					end
+					if Toggles.espNameUseTeamColor.Value then
+						nameEsp.Color = player.TeamColor.Color
+					else
+						nameEsp.Color = Options.espNameColor1.Value
+					end
+					nameEsp.OutlineColor = Options.espNameColor2.Value
+					nameEsp.Position = Vector2.new(pos.X, pos.Y)
+					nameEsp.Size = 1000 / pos.Z + 10
+					nameEsp.Visible = true
 				else
-					nameEsp.Text = player.Name
+					nameEsp.Visible = false
 				end
-				if Toggles.espNameUseTeamColor.Value then
-					nameEsp.Color = player.TeamColor.Color
-				else
-					nameEsp.Color = Options.espNameColor1.Value
-				end
-				nameEsp.OutlineColor = Options.espNameColor2.Value
-				nameEsp.Position = Vector2.new(pos.X, pos.Y)
-				nameEsp.Size = 1000 / pos.Z + 10
-				nameEsp.Visible = true
 			else
 				nameEsp.Visible = false
 			end
 		else
 			nameEsp.Visible = false
 		end
-	end
-
-	local chams = Instance.new("Highlight");chams.Parent = game:GetService("CoreGui")
-	function playerIdx:UpdateChams()
-		if not playerIdx.Char then
-			return
-		end
-		chams.Adornee = playerIdx.Char
-		if Toggles.espHighlightToggled.Value and not isIgnored() and not isDead() then
-			if Toggles.espHighlightUseTeamColor.Value then
-				chams.FillColor = player.TeamColor.Color
-				chams.OutlineColor = player.TeamColor.Color
+		if Toggles.espHighlightToggled.Value then
+			chams.Adornee = playerIdx.Char
+			if Toggles.espHighlightToggled.Value then
+				if Toggles.espHighlightUseTeamColor.Value then
+					chams.FillColor = player.TeamColor.Color
+					chams.OutlineColor = player.TeamColor.Color
+				else
+					chams.FillColor = Options.espHighlightColor1.Value
+					chams.OutlineColor = Options.espHighlightColor2.Value
+				end
+				chams.DepthMode = Enum.HighlightDepthMode[Options.espHighlightDepthMode.Value]
+				chams.FillTransparency = Options.espHighlightFillTransparency.Value
+				chams.OutlineTransparency = Options.espHighlightOutlineTransparency.Value
+				chams.Enabled = true
 			else
-				chams.FillColor = Options.espHighlightColor1.Value
-				chams.OutlineColor = Options.espHighlightColor2.Value
+				chams.Enabled = false
 			end
-			chams.DepthMode = Enum.HighlightDepthMode[Options.espHighlightDepthMode.Value]
-			chams.FillTransparency = Options.espHighlightFillTransparency.Value
-			chams.OutlineTransparency = Options.espHighlightOutlineTransparency.Value
-			chams.Enabled = true
 		else
 			chams.Enabled = false
 		end
@@ -559,19 +476,16 @@ local function addPlayer(player)
 		playerIdx.defaultProperties = {}
 		if WaitForFullChar(character) then
 			playerIdx:Update()
-			playerIdx:UpdateChams()
 			local humanoid = character:FindFirstChildWhichIsA("Humanoid")
 			if humanoid then
-				humanoid:GetPropertyChangedSignal("Health"):Connect(function(value)
-					if value ~= nil and value <= 0 then
+				humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+					if humanoid.Health <= 0 then
 						playerIdx:Update()
-						playerIdx:UpdateChams()
 					end
 				end)
 				humanoid.StateChanged:Connect(function(_, newState)
 					if newState == Enum.HumanoidStateType.Dead then
 						playerIdx:Update()
-						playerIdx:UpdateChams()
 					end
 				end)
 			end
@@ -580,6 +494,12 @@ local function addPlayer(player)
 				playerIdx:Update()
 			end
 			character.ChildAdded:Connect(function(child)
+				if game.GameId == 718936923 then -- Neighborhood War
+					if child.Name == "Dead" then
+						playerIdx:Update()
+						return
+					end
+				end
 				if child:IsA("ForceField") then
 					--print(player, "ff'ed")
 					playerIdx:Update()
@@ -591,35 +511,39 @@ local function addPlayer(player)
 					playerIdx:Update()
 				end
 			end)
+			if game.PlaceId == 4991214437 then -- town
+				local head = playerIdx.Char:FindFirstChild("Head")
+				head:GetPropertyChangedSignal("Material"):Connect(function()
+					playerIdx:Update()
+				end)
+			end
 		end
 	end)
 	player.CharacterRemoving:Connect(function()
 		--print(player, "despawned")
-		pcall(function()
+		if playerIdx then
 			playerIdx.defaultProperties = {}
-		end)
+		end
 	end)
 	player:GetPropertyChangedSignal("Team"):Connect(function(team)
 		--print(player, "updated team to", team)
 		playerIdx:Update()
-		playerIdx:UpdateChams()
 	end)
 	if game.PlaceId == 6172932937 then -- Energy Assault
 		local ragdolled = player:WaitForChild("ragdolled")
 		ragdolled.Changed:Connect(function()
 			playerIdx:Update()
-			playerIdx:UpdateChams()
 		end)
 	end
 	if game.GameId == 1934496708 then -- Project: SCP
 		local ff = Workspace:WaitForChild("FriendlyFire")
 		ff.Changed:Connect(function()
 			playerIdx:Update()
-			playerIdx:UpdateChams()
 		end)
 	end
 	if game.GameId == 2162282815 then -- Rush Point
-		local gamePlayers = Workspace.MapFolder.Players
+		local mapFolder = Workspace:WaitForChild("MapFolder")
+		local gamePlayers = mapFolder:WaitForChild("Players")
 		for _,v in pairs(gamePlayers:GetChildren()) do
 			if v.Name == player.Name then
 				playerIdx.Char = v
@@ -630,6 +554,14 @@ local function addPlayer(player)
 				playerIdx.Char = v
 			end
 		end)
+	end
+	if game.PlaceId == 4991214437 then -- town
+		if playerIdx.Char then
+			local head = playerIdx.Char:FindFirstChild("Head")
+			head:GetPropertyChangedSignal("Material"):Connect(function()
+				playerIdx:Update()
+			end)
+		end
 	end
 end
 
