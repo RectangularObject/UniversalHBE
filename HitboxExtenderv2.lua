@@ -16,6 +16,7 @@ if not isfile("FurryHBE\\KickBypass.txt") then
 	end
 end
 
+-- this shit barely works lmao
 if KRNL_LOADED then -- KRNL
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/zzerexx/scripts/main/SynapseToKrnl.lua"))()
 elseif import then -- Scriptware
@@ -132,19 +133,21 @@ end
 local function addPlayer(player)
 	table.insert(Options.ignorePlayerList.Values, player.Name)
 	updateList(Options.ignorePlayerList)
-	players[player] = { Char = player.Character, defaultProperties = {} }
+	players[player] = {}
 	local playerIdx = players[player]
+	local playerChar = player.Character
+	local defaultProperties = {}
 
 	local function isTeammate()
 		if game.GameId == 718936923 then -- Neighborhood War
-			if not lPlayer.Character or not playerIdx.Char or not playerIdx.Char:FindFirstChild("HumanoidRootPart") then return true end
-			return lPlayer.Character.HumanoidRootPart.Color == playerIdx.Char.HumanoidRootPart.Color
+			if not lPlayer.Character or not playerChar or not playerChar:FindFirstChild("HumanoidRootPart") then return true end
+			return lPlayer.Character.HumanoidRootPart.Color == playerChar.HumanoidRootPart.Color
 		elseif game.PlaceId == 633284182 then -- Fireteam
 			if not player:FindFirstChild("PlayerData") or not player.PlayerData:FindFirstChild("TeamValue") then return true end
 			return lPlayer.PlayerData.TeamValue.Value == player.PlayerData.TeamValue.Value
 		elseif game.PlaceId == 2029250188 then -- Q-Clash
-			if not lPlayer.Character or not playerIdx.Char then return true end
-			return lPlayer.Character.Parent == playerIdx.Char.Parent
+			if not lPlayer.Character or not playerChar then return true end
+			return lPlayer.Character.Parent == playerChar.Parent
 		elseif game.PlaceId == 2978450615 then -- Paintball Reloaded
 			return getrenv()._G.PlayerProfiles.Data[lPlayer.Name].Team == getrenv()._G.PlayerProfiles.Data[player.Name].Team
 		elseif game.GameId == 1934496708 then -- Project: SCP
@@ -196,11 +199,11 @@ local function addPlayer(player)
 			end
 			return selfTeam == playerTeam
 		elseif game.PlaceId == 8770868695 then -- Anomalous Activities: First Contact
-			if not lPlayer.Character or not playerIdx.Char or not player.Team or player.Team.Name == "Dead" or player.Team.Name == "Inactive" then return true end
-			return lPlayer.Character.Parent == playerIdx.Char.Parent
+			if not lPlayer.Character or not playerChar or not player.Team or player.Team.Name == "Dead" or player.Team.Name == "Inactive" then return true end
+			return lPlayer.Character.Parent == playerChar.Parent
 		elseif game.PlaceId == 5884786982 then -- Escape The Darkness
-			if not lPlayer.Character or not playerIdx.Char then return true end
-			return lPlayer.Character.name ~= "Killer" and playerIdx.Char.Name ~= "Killer"
+			if not lPlayer.Character or not playerChar then return true end
+			return lPlayer.Character.name ~= "Killer" and playerChar.Name ~= "Killer"
 		elseif game.GameId == 2162282815 then -- Rush Point
 			if not player:FindFirstChild("SelectedTeam") then return true end
 			return player.SelectedTeam.Value == lPlayer.SelectedTeam.Value
@@ -215,32 +218,32 @@ local function addPlayer(player)
 	end
 
 	local function isDead()
-		if not playerIdx.Char then return true end
-		local humanoid = playerIdx.Char:FindFirstChildWhichIsA("Humanoid")
+		if not playerChar then return true end
+		local humanoid = playerChar:FindFirstChildWhichIsA("Humanoid")
 		if game.PlaceId == 6172932937 then -- Energy Assault
 			return player.ragdolled.Value
 		elseif game.GameId == 718936923 then -- Neighborhood War
-			return playerIdx.Char:FindFirstChild("Dead") ~= nil
+			return playerChar:FindFirstChild("Dead") ~= nil
 		end
 		return humanoid and humanoid:GetState() == Enum.HumanoidStateType.Dead
 	end
 
 	local function isSitting()
-		local humanoid = playerIdx.Char:FindFirstChildWhichIsA("Humanoid")
+		local humanoid = playerChar:FindFirstChildWhichIsA("Humanoid")
 		return Toggles.expanderSitCheck.Value and humanoid ~= nil and humanoid.Sit == true
 	end
 
 	local function isFFed()
-		if not playerIdx.Char then return false end
+		if not playerChar then return false end
 		if game.PlaceId == 4991214437 then -- town
-			return playerIdx.Char.Head.Material == Enum.Material.ForceField
+			return playerChar.Head.Material == Enum.Material.ForceField
 		end
-		local ff = playerIdx.Char:FindFirstChildWhichIsA("ForceField")
-		return Toggles.expanderFFCheck.Value and playerIdx.Char ~= nil and ff ~= nil and ff.Visible == true
+		local ff = playerChar:FindFirstChildWhichIsA("ForceField")
+		return Toggles.expanderFFCheck.Value and playerChar ~= nil and ff ~= nil and ff.Visible == true
 	end
 
 	local function isIgnored()
-		if not playerIdx.Char then return true end
+		if not playerChar then return true end
 		return Toggles.ignoreOwnTeamToggled.Value and isTeammate() or
 		Toggles.ignoreSelectedTeamsToggled.Value and table.find(Options.ignoreTeamList:GetActiveValues(), tostring(player.Team)) or
 		Toggles.ignoreSelectedPlayersToggled.Value and table.find(Options.ignorePlayerList:GetActiveValues(), tostring(player.Name))
@@ -250,68 +253,68 @@ local function addPlayer(player)
 
 	local debounce = false
 	local function setup(part)
-		playerIdx.defaultProperties[part.Name] = {}
-		local defaultProperties = playerIdx.defaultProperties[part.Name]
-		defaultProperties.Size = part.Size
-		defaultProperties.Transparency = part.Transparency
-		defaultProperties.Massless = part.Massless
-		defaultProperties.CanCollide = part.CanCollide
-		defaultProperties.CollisionGroupId = part.CollisionGroupId
-		local sizeHook = part:AddGetHook("Size", defaultProperties.Size)
-		local transparencyHook = part:AddGetHook("Transparency", defaultProperties.Transparency)
-		local masslessHook = part:AddGetHook("Massless", defaultProperties.Massless)
-		local canCollideHook = part:AddGetHook("CanCollide", defaultProperties.CanCollide)
-		local collisionGroupHook = part:AddGetHook("CollisionGroupId", defaultProperties.CollisionGroupId)
+		defaultProperties[part.Name] = {}
+		local properties = defaultProperties[part.Name]
+		properties.Size = part.Size
+		properties.Transparency = part.Transparency
+		properties.Massless = part.Massless
+		properties.CanCollide = part.CanCollide
+		properties.CollisionGroupId = part.CollisionGroupId
+		local sizeHook = part:AddGetHook("Size", properties.Size)
+		local transparencyHook = part:AddGetHook("Transparency", properties.Transparency)
+		local masslessHook = part:AddGetHook("Massless", properties.Massless)
+		local canCollideHook = part:AddGetHook("CanCollide", properties.CanCollide)
+		local collisionGroupHook = part:AddGetHook("CollisionGroupId", properties.CollisionGroupId)
 		part:AddSetHook("Size", function(_, value)
-			defaultProperties.Size = value
-			sizeHook:Modify("Size", defaultProperties.Size)
+			properties.Size = value
+			sizeHook:Modify("Size", properties.Size)
 			if Toggles.expanderToggled.Value then
 				local size = Options.expanderSize.Value
 				return Vector3.new(size, size, size)
 			end
-			return defaultProperties.Size
+			return properties.Size
 		end)
 		part:AddSetHook("Transparency", function(_, value)
-			defaultProperties.Transparency = value
-			transparencyHook:Modify("Transparency", defaultProperties.Transparency)
+			properties.Transparency = value
+			transparencyHook:Modify("Transparency", properties.Transparency)
 			if Toggles.expanderToggled.Value then
 				return Options.expanderTransparency.Value
 			end
-			return defaultProperties.Transparency
+			return properties.Transparency
 		end)
 		part:AddSetHook("Massless", function(_, value)
-			defaultProperties.Massless = value
-			masslessHook:Modify("Massless", defaultProperties.Massless)
+			properties.Massless = value
+			masslessHook:Modify("Massless", properties.Massless)
 			if Toggles.expanderToggled.Value then
 				if part.Name ~= "HumanoidRootPart" then
 					return true
 				end
 			end
-			return defaultProperties.Massless
+			return properties.Massless
 		end)
 		part:AddSetHook("CanCollide", function(_, value)
-			defaultProperties.CanCollide = value
-			canCollideHook:Modify("CanCollide", defaultProperties.CanCollide)
+			properties.CanCollide = value
+			canCollideHook:Modify("CanCollide", properties.CanCollide)
 			if Toggles.expanderToggled.Value and not Toggles.collisionsToggled.Value then
 				if part.Name == "Head" or part.Name == "HumanoidRootPart" then
 					return false
 				end
 			end
-			return defaultProperties.CanCollide
+			return properties.CanCollide
 		end)
 		part:AddSetHook("CollisionGroupId", function(_, value)
-			defaultProperties.CollisionGroupId = value
-			collisionGroupHook:Modify("CollisionGroupId", defaultProperties.CollisionGroupId)
+			properties.CollisionGroupId = value
+			collisionGroupHook:Modify("CollisionGroupId", properties.CollisionGroupId)
 			if Toggles.expanderToggled.Value and not Toggles.collisionsToggled.Value then
 				return PhysicsService:GetCollisionGroupId("furryCollisions")
 			end
-			return defaultProperties.CollisionGroupId
+			return properties.CollisionGroupId
 		end)
 		part.Changed:Connect(function(property) -- __namecall isn't replicated to the client when called from a serverscript
 			if debounce then return end
-			if defaultProperties[property] then
-				if defaultProperties[property] ~= part[property] then
-					defaultProperties[property] = part[property]
+			if properties[property] then
+				if properties[property] ~= part[property] then
+					properties[property] = part[property]
 				end
 				playerIdx:Update()
 			end
@@ -329,7 +332,7 @@ local function addPlayer(player)
 	end
 
 	local function resize(part)
-		if not playerIdx.defaultProperties[part.Name] then
+		if not defaultProperties[part.Name] then
 			setup(part)
 		end
 		if Toggles.expanderToggled.Value and isActive(part) and not isIgnored() and not isSitting() and not isFFed() and not isDead() then
@@ -343,25 +346,25 @@ local function addPlayer(player)
 					part.CollisionGroupId = PhysicsService:GetCollisionGroupId("furryCollisions")
 				end
 			else
-				part.CanCollide = playerIdx.defaultProperties[part.Name].CanCollide
-				part.CollisionGroupId = playerIdx.defaultProperties[part.Name].CollisionGroupId
+				part.CanCollide = defaultProperties[part.Name].CanCollide
+				part.CollisionGroupId = defaultProperties[part.Name].CollisionGroupId
 			end
 			local size = Options.expanderSize.Value
 			part.Size = Vector3.new(size, size, size)
 			part.Transparency = Options.expanderTransparency.Value
 		else
-			part.Size = playerIdx.defaultProperties[part.Name].Size
-			part.Transparency = playerIdx.defaultProperties[part.Name].Transparency
-			part.Massless = playerIdx.defaultProperties[part.Name].Massless
-			part.CanCollide = playerIdx.defaultProperties[part.Name].CanCollide
-			part.CollisionGroupId = playerIdx.defaultProperties[part.Name].CollisionGroupId
+			part.Size = defaultProperties[part.Name].Size
+			part.Transparency = defaultProperties[part.Name].Transparency
+			part.Massless = defaultProperties[part.Name].Massless
+			part.CanCollide = defaultProperties[part.Name].CanCollide
+			part.CollisionGroupId = defaultProperties[part.Name].CollisionGroupId
 		end
 	end
 
 	function playerIdx:Update()
-		if not playerIdx.Char then return end
+		if not playerChar then return end
 		debounce = true
-		for _, v in pairs(playerIdx.Char:GetChildren()) do
+		for _, v in pairs(playerChar:GetChildren()) do
 			if v:IsA("BasePart") then
 				resize(v)
 			end
@@ -383,9 +386,9 @@ local function addPlayer(player)
 	local nameEsp = Drawing.new("Text"); nameEsp.Center = true; nameEsp.Outline = true
 	local chams = Instance.new("Highlight");chams.Parent = game:GetService("CoreGui")
 	function playerIdx:UpdateESP()
-		if not playerIdx.Char or isIgnored() or isDead() then nameEsp.Visible = false; chams.Enabled = false return end
+		if not playerChar or isIgnored() or isDead() then nameEsp.Visible = false; chams.Enabled = false return end
 		if Toggles.espNameToggled.Value then
-			local target = FindFirstChildMatching(playerIdx.Char, "Torso")
+			local target = FindFirstChildMatching(playerChar, "Torso")
 			if target then
 				local pos, vis = WorldToViewportPoint(Camera, target.Position)
 				if vis then
@@ -413,7 +416,7 @@ local function addPlayer(player)
 			nameEsp.Visible = false
 		end
 		if Toggles.espHighlightToggled.Value then
-			chams.Adornee = playerIdx.Char
+			chams.Adornee = playerChar
 			if Toggles.espHighlightToggled.Value then
 				if Toggles.espHighlightUseTeamColor.Value then
 					chams.FillColor = player.TeamColor.Color
@@ -472,8 +475,8 @@ local function addPlayer(player)
 
 	player.CharacterAdded:Connect(function(character)
 		--print(player, "spawned")
-		playerIdx.Char = character
-		playerIdx.defaultProperties = {}
+		playerChar = character
+		defaultProperties = {}
 		if WaitForFullChar(character) then
 			playerIdx:Update()
 			local humanoid = character:FindFirstChildWhichIsA("Humanoid")
@@ -512,7 +515,7 @@ local function addPlayer(player)
 				end
 			end)
 			if game.PlaceId == 4991214437 then -- town
-				local head = playerIdx.Char:FindFirstChild("Head")
+				local head = playerChar:FindFirstChild("Head")
 				head:GetPropertyChangedSignal("Material"):Connect(function()
 					playerIdx:Update()
 				end)
@@ -522,7 +525,7 @@ local function addPlayer(player)
 	player.CharacterRemoving:Connect(function()
 		--print(player, "despawned")
 		if playerIdx then
-			playerIdx.defaultProperties = {}
+			defaultProperties = {}
 		end
 	end)
 	player:GetPropertyChangedSignal("Team"):Connect(function(team)
@@ -546,18 +549,18 @@ local function addPlayer(player)
 		local gamePlayers = mapFolder:WaitForChild("Players")
 		for _,v in pairs(gamePlayers:GetChildren()) do
 			if v.Name == player.Name then
-				playerIdx.Char = v
+				playerChar = v
 			end
 		end
 		gamePlayers.ChildAdded:Connect(function(v)
 			if v.Name == player.Name then
-				playerIdx.Char = v
+				playerChar = v
 			end
 		end)
 	end
 	if game.PlaceId == 4991214437 then -- town
-		if playerIdx.Char then
-			local head = playerIdx.Char:FindFirstChild("Head")
+		if playerChar then
+			local head = playerChar:FindFirstChild("Head")
 			head:GetPropertyChangedSignal("Material"):Connect(function()
 				playerIdx:Update()
 			end)
