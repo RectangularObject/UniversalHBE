@@ -260,31 +260,31 @@ local function addPlayer(player)
 		properties.Massless = part.Massless
 		properties.CanCollide = part.CanCollide
 		properties.CollisionGroupId = part.CollisionGroupId
-		local sizeHook = part:AddGetHook("Size", properties.Size)
-		local transparencyHook = part:AddGetHook("Transparency", properties.Transparency)
-		local masslessHook = part:AddGetHook("Massless", properties.Massless)
-		local canCollideHook = part:AddGetHook("CanCollide", properties.CanCollide)
-		local collisionGroupHook = part:AddGetHook("CollisionGroupId", properties.CollisionGroupId)
-		part:AddSetHook("Size", function(_, value)
+		local getSizeHook = part:AddGetHook("Size", properties.Size)
+		local getTransparencyHook = part:AddGetHook("Transparency", properties.Transparency)
+		local getMasslessHook = part:AddGetHook("Massless", properties.Massless)
+		local getCanCollideHook = part:AddGetHook("CanCollide", properties.CanCollide)
+		local getCollisionGroupHook = part:AddGetHook("CollisionGroupId", properties.CollisionGroupId)
+		local setSizeHook = part:AddSetHook("Size", function(_, value)
 			properties.Size = value
-			sizeHook:Modify("Size", properties.Size)
+			getSizeHook:Modify("Size", properties.Size)
 			if Toggles.expanderToggled.Value then
 				local size = Options.expanderSize.Value
 				return Vector3.new(size, size, size)
 			end
 			return properties.Size
 		end)
-		part:AddSetHook("Transparency", function(_, value)
+		local setTransparencyHook = part:AddSetHook("Transparency", function(_, value)
 			properties.Transparency = value
-			transparencyHook:Modify("Transparency", properties.Transparency)
+			getTransparencyHook:Modify("Transparency", properties.Transparency)
 			if Toggles.expanderToggled.Value then
 				return Options.expanderTransparency.Value
 			end
 			return properties.Transparency
 		end)
-		part:AddSetHook("Massless", function(_, value)
+		local setMasslessHook = part:AddSetHook("Massless", function(_, value)
 			properties.Massless = value
-			masslessHook:Modify("Massless", properties.Massless)
+			getMasslessHook:Modify("Massless", properties.Massless)
 			if Toggles.expanderToggled.Value then
 				if part.Name ~= "HumanoidRootPart" then
 					return true
@@ -292,9 +292,9 @@ local function addPlayer(player)
 			end
 			return properties.Massless
 		end)
-		part:AddSetHook("CanCollide", function(_, value)
+		local setCanCollideHook = part:AddSetHook("CanCollide", function(_, value)
 			properties.CanCollide = value
-			canCollideHook:Modify("CanCollide", properties.CanCollide)
+			getCanCollideHook:Modify("CanCollide", properties.CanCollide)
 			if Toggles.expanderToggled.Value and not Toggles.collisionsToggled.Value then
 				if part.Name == "Head" or part.Name == "HumanoidRootPart" then
 					return false
@@ -302,21 +302,36 @@ local function addPlayer(player)
 			end
 			return properties.CanCollide
 		end)
-		part:AddSetHook("CollisionGroupId", function(_, value)
+		local setCollisionGroupId = part:AddSetHook("CollisionGroupId", function(_, value)
 			properties.CollisionGroupId = value
-			collisionGroupHook:Modify("CollisionGroupId", properties.CollisionGroupId)
+			getCollisionGroupHook:Modify("CollisionGroupId", properties.CollisionGroupId)
 			if Toggles.expanderToggled.Value and not Toggles.collisionsToggled.Value then
 				return PhysicsService:GetCollisionGroupId("furryCollisions")
 			end
 			return properties.CollisionGroupId
 		end)
-		part.Changed:Connect(function(property) -- __namecall isn't replicated to the client when called from a serverscript
+		local changed = part.Changed:Connect(function(property) -- __namecall isn't replicated to the client when called from a serverscript
 			if debounce then return end
 			if properties[property] then
 				if properties[property] ~= part[property] then
 					properties[property] = part[property]
 				end
 				playerIdx:Update()
+			end
+		end)
+		part.AncestryChanged:Connect(function(_, parent)
+			if parent == nil then
+				getSizeHook:Remove()
+				getTransparencyHook:Remove()
+				getMasslessHook:Remove()
+				getCanCollideHook:Remove()
+				getCollisionGroupHook:Remove()
+				setSizeHook:Remove()
+				setTransparencyHook:Remove()
+				setMasslessHook:Remove()
+				setCanCollideHook:Remove()
+				setCollisionGroupId:Remove()
+				changed:Disconnect()
 			end
 		end)
 	end
