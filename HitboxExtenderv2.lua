@@ -235,7 +235,7 @@ local function addPlayer(player)
 
 	local function isFFed()
 		if not playerChar then return false end
-		if game.PlaceId == 4991214437 then -- town
+		if game.PlaceId == 4991214437 or game.PlaceId == 6652350934 then -- town
 			return playerChar.Head.Material == Enum.Material.ForceField
 		end
 		local ff = playerChar:FindFirstChildWhichIsA("ForceField")
@@ -319,20 +319,18 @@ local function addPlayer(player)
 				playerIdx:Update()
 			end
 		end)
-		part.AncestryChanged:Connect(function(_, parent)
-			if parent == nil then
-				getSizeHook:Remove()
-				getTransparencyHook:Remove()
-				getMasslessHook:Remove()
-				getCanCollideHook:Remove()
-				getCollisionGroupHook:Remove()
-				setSizeHook:Remove()
-				setTransparencyHook:Remove()
-				setMasslessHook:Remove()
-				setCanCollideHook:Remove()
-				setCollisionGroupId:Remove()
-				changed:Disconnect()
-			end
+		part.Destroying:Connect(function()
+			getSizeHook:Remove()
+			getTransparencyHook:Remove()
+			getMasslessHook:Remove()
+			getCanCollideHook:Remove()
+			getCollisionGroupHook:Remove()
+			setSizeHook:Remove()
+			setTransparencyHook:Remove()
+			setMasslessHook:Remove()
+			setCanCollideHook:Remove()
+			setCollisionGroupId:Remove()
+			changed:Disconnect()
 		end)
 	end
 
@@ -529,7 +527,7 @@ local function addPlayer(player)
 					playerIdx:Update()
 				end
 			end)
-			if game.PlaceId == 4991214437 then -- town
+			if game.PlaceId == 4991214437 or game.PlaceId == 6652350934 then -- town
 				local head = playerChar:FindFirstChild("Head")
 				head:GetPropertyChangedSignal("Material"):Connect(function()
 					playerIdx:Update()
@@ -573,7 +571,7 @@ local function addPlayer(player)
 			end
 		end)
 	end
-	if game.PlaceId == 4991214437 then -- town
+	if game.PlaceId == 4991214437 or game.PlaceId == 6652350934 then -- town
 		if playerChar then
 			local head = playerChar:FindFirstChild("Head")
 			head:GetPropertyChangedSignal("Material"):Connect(function()
