@@ -10,20 +10,13 @@ end
 -- thanks 3ds and kiko metatables r hard (https://v3rmillion.net/showthread.php?tid=1089069)
 -- my version uses hookmetamethod :D
 if not getgenv().MTAPIMutex then loadstring(game:HttpGet("https://raw.githubusercontent.com/RectangularObject/MT-Api-vhookmetamethod/main/__source/mt-api%20v2.lua", true))() end
--- thanks lego hacker I love you for making this (https://v3rmillion.net/showthread.php?tid=1140873)
-loadstring(game:HttpGet("https://raw.githubusercontent.com/LegoHacker1337/legohacks/main/PhysicsServiceOnClient.lua"))()
 -- thanks Iris (https://v3rmillion.net/showthread.php?pid=8154179)
 --loadstring(game:HttpGet("https://api.irisapp.ca/Scripts/IrisInstanceProtect.lua"))()
 local Plrs = game:GetService("Players")
 local lPlayer = Plrs.LocalPlayer or Plrs.PlayerAdded:Wait()
 local Workspace = game:GetService("Workspace")
-local physService = game:GetService("PhysicsService")
 local RunService = game:GetService("RunService")
 local Teams = game:GetService("Teams")
-physService:CreateCollisionGroup("squarehookhackcheatexploit")
-local function disableCollisions(group)
-	physService:CollisionGroupSetCollidable("squarehookhackcheatexploit", group, false)
-end
 
 if game.PlaceId == 111311599 then -- Critical Strike
 	local anticheat = game:GetService("ReplicatedFirst")["Serverbased AntiCheat"] -- then why put it in a localscript?
@@ -270,11 +263,11 @@ local function addCharacter(player, character)
 			originals[i].Size = v.Size
 			originals[i].Transparency = v.Transparency
 			originals[i].Massless = v.Massless
-			originals[i].CollisionGroupId = v.CollisionGroupId
+			originals[i].CanCollide = v.CanCollide
 			local sizeHook = v:AddGetHook("Size", originals[i].Size)
 			local transparencyHook = v:AddGetHook("Transparency", originals[i].Transparency)
 			local masslessHook = v:AddGetHook("Massless", originals[i].Massless)
-			local collisionHook = v:AddGetHook("CollisionGroupId", originals[i].CollisionGroupId)
+			local collisionHook = v:AddGetHook("CanCollide", originals[i].CanCollide)
 			v:AddSetHook("Size", function(self, value)
 				originals[i].Size = value
 				sizeHook:Modify("Size", value)
@@ -290,9 +283,9 @@ local function addCharacter(player, character)
 				masslessHook:Modify("Massless", value)
 				return value
 			end)
-			v:AddSetHook("CollisionGroupId", function(self, value)
-				originals[i].CollisionGroupId = value
-				collisionHook:Modify("CollisionGroupId", value)
+			v:AddSetHook("CanCollide", function(self, value)
+				originals[i].CanCollide = value
+				collisionHook:Modify("CanCollide", value)
 				return value
 			end)
 		end
@@ -309,7 +302,7 @@ local function addCharacter(player, character)
 				customPart.Size = originals[customPart.Name].Size
 				customPart.Transparency = originals[customPart.Name].Transparency
 				customPart.Massless = originals[customPart.Name].Massless
-				customPart.CollisionGroupId = originals[customPart.Name].CollisionGroupId
+				customPart.CanCollide = originals[customPart.Name].CanCollide
 			end
 		end
 		for i, v in pairs(bodyParts) do
@@ -321,7 +314,7 @@ local function addCharacter(player, character)
 					v.Size = originals[i].Size
 					v.Transparency = originals[i].Transparency
 					v.Massless = originals[i].Massless
-					v.CollisionGroupId = originals[i].CollisionGroupId
+					v.CanCollide = originals[i].CanCollide
 				elseif type(v) == "table" then
 					for o, b in pairs(v) do
 						if not originals[o] then
@@ -330,7 +323,7 @@ local function addCharacter(player, character)
 						b.Size = originals[o].Size
 						b.Transparency = originals[o].Transparency
 						b.Massless = originals[o].Massless
-						b.CollisionGroupId = originals[o].CollisionGroupId
+						b.CanCollide = originals[o].CanCollide
 					end
 				end
 			end
@@ -482,9 +475,9 @@ local function addCharacter(player, character)
 						end
 						customPart.Massless = true
 						if collisionsToggled.Value then
-							customPart.CollisionGroupId = originals[customPart.Name].CollisionGroupId
+							customPart.CanCollide = originals[customPart.Name].CanCollide
 						else
-							customPart.CollisionGroupId = physService:GetCollisionGroupId("squarehookhackcheatexploit")
+							customPart.CanCollide = false
 						end
 						customPart.Size = Vector3.new(extenderSize.Value, extenderSize.Value, extenderSize.Value)
 						customPart.Transparency = extenderTransparency.Value
@@ -502,9 +495,9 @@ local function addCharacter(player, character)
 								v.Massless = true
 							end
 							if collisionsToggled.Value then
-								v.CollisionGroupId = originals[i].CollisionGroupId
+								v.CanCollide = originals[i].CanCollide
 							else
-								v.CollisionGroupId = physService:GetCollisionGroupId("squarehookhackcheatexploit")
+								v.CanCollide = false
 							end
 							v.Size = Vector3.new(extenderSize.Value, extenderSize.Value, extenderSize.Value)
 							v.Transparency = extenderTransparency.Value
@@ -515,9 +508,9 @@ local function addCharacter(player, character)
 								end
 								b.Massless = true
 								if collisionsToggled.Value then
-									b.CollisionGroupId = originals[o].CollisionGroupId
+									b.CanCollide = originals[o].CanCollide
 								else
-									b.CollisionGroupId = physService:GetCollisionGroupId("squarehookhackcheatexploit")
+									b.CanCollide = false
 								end
 								b.Size = Vector3.new(extenderSize.Value, extenderSize.Value, extenderSize.Value)
 								b.Transparency = extenderTransparency.Value
@@ -554,23 +547,6 @@ for _, player in ipairs(Plrs:GetPlayers()) do
 		local Char = player.Character
 		if Char then
 			addCharacter(player, Char)
-		end
-	else
-		local function onDescendantAdded(descendant)
-			if string.find(descendant.Name, "Torso") and descendant:IsA("BasePart") then
-				disableCollisions(physService:GetCollisionGroupName(descendant.CollisionGroupId))
-			end
-		end
-		local function onCharacterAdded(character)
-			for _, v in pairs(character:GetDescendants()) do
-				onDescendantAdded(v)
-			end
-			character.DescendantAdded:Connect(onDescendantAdded)
-		end
-		player.CharacterAdded:Connect(onCharacterAdded)
-		local Char = player.Character
-		if Char then
-			onCharacterAdded(Char)
 		end
 	end
 end

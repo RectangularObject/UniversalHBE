@@ -26,7 +26,7 @@ end
 if not getgenv().MTAPIMutex then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/RectangularObject/MT-Api-vhookmetamethod/main/__source/mt-api%20v2.lua", true))()
 end
-loadstring(game:HttpGet("https://raw.githubusercontent.com/LegoHacker1337/legohacks/main/PhysicsServiceOnClient.lua"))()
+--[[ loadstring(game:HttpGet("https://raw.githubusercontent.com/LegoHacker1337/legohacks/main/PhysicsServiceOnClient.lua"))() ]]
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/wally-rblx/LinoriaLib/main/Library.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/wally-rblx/LinoriaLib/main/addons/SaveManager.lua"))()
 SaveManager:SetLibrary(Library)
@@ -34,7 +34,7 @@ SaveManager:SetFolder("FurryHBE")
 
 local Teams = game:GetService("Teams")
 local Players = game:GetService("Players")
-local PhysicsService = game:GetService("PhysicsService")
+--[[ local PhysicsService = game:GetService("PhysicsService") ]]
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -42,12 +42,13 @@ local Camera = Workspace.CurrentCamera
 local WorldToViewportPoint = Camera.WorldToViewportPoint
 local lPlayer = Players.LocalPlayer
 local players = {}
+local entities = {}
 local teamModule = nil
 
-PhysicsService:CreateCollisionGroup("furryCollisions")
+--[[ PhysicsService:CreateCollisionGroup("furryCollisions")
 for _, v in pairs(PhysicsService:GetCollisionGroups()) do
 	PhysicsService:CollisionGroupSetCollidable(PhysicsService:GetCollisionGroupName(v.id), "furryCollisions", false)
-end
+end ]]
 
 local function updatePlayers()
 	if not _G.FurryHBELoaded then return end
@@ -128,6 +129,10 @@ if game.GameId == 504234221 then -- Vampire Hunters 3
 end
 if game.GameId == 1934496708 then -- Project: SCP
 	teamModule = require(Workspace:WaitForChild("Teams"))
+end
+
+local function addEntity(entity)
+	
 end
 
 local function addPlayer(player)
@@ -264,7 +269,7 @@ local function addPlayer(player)
 		local getTransparencyHook = part:AddGetHook("Transparency", properties.Transparency)
 		local getMasslessHook = part:AddGetHook("Massless", properties.Massless)
 		local getCanCollideHook = part:AddGetHook("CanCollide", properties.CanCollide)
-		local getCollisionGroupHook = part:AddGetHook("CollisionGroupId", properties.CollisionGroupId)
+		--[[ local getCollisionGroupHook = part:AddGetHook("CollisionGroupId", properties.CollisionGroupId) ]]
 		local setSizeHook = part:AddSetHook("Size", function(_, value)
 			properties.Size = value
 			getSizeHook:Modify("Size", properties.Size)
@@ -302,14 +307,14 @@ local function addPlayer(player)
 			end
 			return properties.CanCollide
 		end)
-		local setCollisionGroupId = part:AddSetHook("CollisionGroupId", function(_, value)
+		--[[ local setCollisionGroupId = part:AddSetHook("CollisionGroupId", function(_, value)
 			properties.CollisionGroupId = value
 			getCollisionGroupHook:Modify("CollisionGroupId", properties.CollisionGroupId)
 			if Toggles.expanderToggled.Value and not Toggles.collisionsToggled.Value then
 				return PhysicsService:GetCollisionGroupId("furryCollisions")
 			end
 			return properties.CollisionGroupId
-		end)
+		end) ]]
 		local changed = part.Changed:Connect(function(property) -- __namecall isn't replicated to the client when called from a serverscript
 			if debounce then return end
 			if properties[property] then
@@ -353,14 +358,15 @@ local function addPlayer(player)
 				part.Massless = true
 			end
 			if not Toggles.collisionsToggled.Value then
-				if part.Name == "Head" or part.Name == "HumanoidRootPart" then
+				--[[ if part.Name == "Head" or part.Name == "HumanoidRootPart" then
 					part.CanCollide = false
 				else
 					part.CollisionGroupId = PhysicsService:GetCollisionGroupId("furryCollisions")
-				end
+				end ]]
+				part.CanCollide = false
 			else
 				part.CanCollide = defaultProperties[part.Name].CanCollide
-				part.CollisionGroupId = defaultProperties[part.Name].CollisionGroupId
+				--[[ part.CollisionGroupId = defaultProperties[part.Name].CollisionGroupId ]]
 			end
 			local size = Options.expanderSize.Value
 			part.Size = Vector3.new(size, size, size)
@@ -370,7 +376,7 @@ local function addPlayer(player)
 			part.Transparency = defaultProperties[part.Name].Transparency
 			part.Massless = defaultProperties[part.Name].Massless
 			part.CanCollide = defaultProperties[part.Name].CanCollide
-			part.CollisionGroupId = defaultProperties[part.Name].CollisionGroupId
+			--[[ part.CollisionGroupId = defaultProperties[part.Name].CollisionGroupId ]]
 		end
 	end
 
