@@ -1,12 +1,13 @@
-if _G.FurryHBELoaded ~= nil then
+if getgenv().FurryHBELoaded ~= nil then
 	return
 end
+getgenv().FurryHBELoaded = false
 
-_G.FurryHBELoaded = false
 if not game:IsLoaded() then
 	game.Loaded:Wait()
 end
 
+--[[ This is useless, not sure why I wrote it in the first place
 if not isfile("FurryHBE\\KickBypass.txt") then
 	if not syn then
 		game:GetService("Players").LocalPlayer:Kick("Your exploit is not officially supported. You will bypass this kick from now on, but don't expect the script to completely work.")
@@ -15,16 +16,10 @@ if not isfile("FurryHBE\\KickBypass.txt") then
 		return
 	end
 end
-
--- this shit barely works lmao
-if KRNL_LOADED then -- KRNL
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/zzerexx/scripts/main/SynapseToKrnl.lua"))()
-elseif import then -- Scriptware
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/zzerexx/scripts/main/SynapseToScriptWare.lua", true))()
-end
+]]
 
 if not getgenv().MTAPIMutex then
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/RectangularObject/MT-Api-vhookmetamethod/main/__source/mt-api%20v2.lua", true))()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/KikoTheDon/MT-Api-v2/main/__source/mt-api%20v2.lua", true))()
 end
 --[[ loadstring(game:HttpGet("https://raw.githubusercontent.com/LegoHacker1337/legohacks/main/PhysicsServiceOnClient.lua"))() ]]
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/wally-rblx/LinoriaLib/main/Library.lua"))()
@@ -51,7 +46,7 @@ for _, v in pairs(PhysicsService:GetCollisionGroups()) do
 end ]]
 
 local function updatePlayers()
-	if not _G.FurryHBELoaded then return end
+	if not getgenv().FurryHBELoaded then return end
 	for _, v in pairs(players) do
 		task.spawn(function()
 			v:Update()
@@ -60,7 +55,7 @@ local function updatePlayers()
 end
 
 RunService:BindToRenderStep("furryWalls", Enum.RenderPriority.Camera.Value - 1, function()
-	if not _G.FurryHBELoaded then return end
+	if not getgenv().FurryHBELoaded then return end
 	Camera = Workspace.CurrentCamera
 	for _, v in pairs(players) do
 		task.spawn(function()
@@ -101,8 +96,8 @@ espGroupbox:AddDropdown("espHighlightDepthMode", { Text = "Chams Depth Mode", Al
 espGroupbox:AddSlider("espHighlightFillTransparency", { Text = "Chams Fill Transparency", Min = 0, Max = 1, Default = 0.5, Rounding = 2 }):OnChanged(updatePlayers)
 espGroupbox:AddSlider("espHighlightOutlineTransparency", { Text = "Chams Outline Transparency", Min = 0, Max = 1, Default = 0, Rounding = 2 }):OnChanged(updatePlayers)
 
-miscGroupbox:AddLabel("Toggle UI"):AddKeyPicker("menuKeybind", { Default = "RightControl", NoUI = true, Text = "Menu Keybind" })
-miscGroupbox:AddLabel("Force Update"):AddKeyPicker("forceUpdateKeybind", { Default = "RightAlt", NoUI = true, Text = "Force Update Keybind"})
+miscGroupbox:AddLabel("Toggle UI"):AddKeyPicker("menuKeybind", { Default = "End", NoUI = true, Text = "Menu Keybind" })
+miscGroupbox:AddLabel("Force Update"):AddKeyPicker("forceUpdateKeybind", { Default = "Home", NoUI = true, Text = "Force Update Keybind"})
 Options.forceUpdateKeybind:OnClick(updatePlayers)
 Library.ToggleKeybind = Options.menuKeybind
 
@@ -672,7 +667,7 @@ if game.PlaceId == 111311599 then
 	anticheat.Disabled = true
 end
 
-_G.FurryHBELoaded = true
+getgenv().FurryHBELoaded = true
 updatePlayers()
 Library:Notify("hai :3")
 Library:Notify("Press " .. Library.ToggleKeybind.Value .. " to open the menu")
