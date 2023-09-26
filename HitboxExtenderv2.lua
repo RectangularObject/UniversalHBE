@@ -366,11 +366,23 @@ local function addPlayer(player)
 			local size = Options.expanderSize.Value
 			part.Size = Vector3.new(size, size, size)
 			part.Transparency = Options.expanderTransparency.Value
+			if part.Name == "Head" then
+				local face = part:FindFirstChild("face")
+				if face then
+					face.Transparency = Options.expanderTransparency.Value
+				end
+			end
 		else
-			part.Size = defaultProperties[part.Name].Size
-			part.Transparency = defaultProperties[part.Name].Transparency
 			part.Massless = defaultProperties[part.Name].Massless
 			part.CanCollide = defaultProperties[part.Name].CanCollide
+			part.Size = defaultProperties[part.Name].Size
+			part.Transparency = defaultProperties[part.Name].Transparency
+			if part.Name == "Head" then
+				local face = part:FindFirstChild("face")
+				if face then
+					face.Transparency = defaultProperties["Head"].Transparency
+				end
+			end
 			--[[ part.CollisionGroupId = defaultProperties[part.Name].CollisionGroupId ]]
 		end
 	end
