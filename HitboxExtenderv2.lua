@@ -7,23 +7,12 @@ if not game:IsLoaded() then
 	game.Loaded:Wait()
 end
 
---[[ This is useless, not sure why I wrote it in the first place
-if not isfile("FurryHBE\\KickBypass.txt") then
-	if not syn then
-		game:GetService("Players").LocalPlayer:Kick("Your exploit is not officially supported. You will bypass this kick from now on, but don't expect the script to completely work.")
-		makefolder("FurryHBE")
-		writefile("FurryHBE\\KickBypass.txt", "")
-		return
-	end
-end
-]]
-
 if not getgenv().MTAPIMutex then
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/KikoTheDon/MT-Api-v2/main/__source/mt-api%20v2.lua", true))()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/RectangularObject/MT-Api-v2/main/__source/mt-api%20v2.lua", true))()
 end
 --[[ loadstring(game:HttpGet("https://raw.githubusercontent.com/LegoHacker1337/legohacks/main/PhysicsServiceOnClient.lua"))() ]]
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/wally-rblx/LinoriaLib/main/Library.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/wally-rblx/LinoriaLib/main/addons/SaveManager.lua"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/mstudio45/LinoriaLib/main/Library.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/mstudio45/LinoriaLib/main/addons/SaveManager.lua"))()
 SaveManager:SetLibrary(Library)
 SaveManager:SetFolder("FurryHBE")
 
@@ -337,7 +326,11 @@ local function addPlayer(player)
 	local function isActive(part)
 		local name = part.Name
 		for _, v in pairs(Options.expanderPartList:GetActiveValues()) do
-			if string.match(name, v) or (v == "Custom Part" and string.match(name, Options.customPartName.Value)) or (v == "Left Arm" and string.match(name, "Left") and (string.match(name, "Arm") or string.match(name, "Hand"))) or (v == "Right Arm" and string.match(name, "Right") and (string.match(name, "Arm") or string.match(name, "Hand"))) or (v == "Left Leg" and string.match(name, "Left") and (string.match(name, "Leg") or string.match(name, "Foot"))) or (v == "Right Leg" and string.match(name, "Right") and (string.match(name, "Leg") or string.match(name, "Foot"))) then
+			if string.match(name, v) or (v == "Custom Part" and string.match(name, Options.customPartName.Value)) or
+			(v == "Left Arm" and string.match(name, "Left") and (string.match(name, "Arm") or string.match(name, "Hand"))) or
+			(v == "Right Arm" and string.match(name, "Right") and (string.match(name, "Arm") or string.match(name, "Hand"))) or
+			(v == "Left Leg" and string.match(name, "Left") and (string.match(name, "Leg") or string.match(name, "Foot"))) or
+			(v == "Right Leg" and string.match(name, "Right") and (string.match(name, "Leg") or string.match(name, "Foot"))) then
 				return true
 			end
 		end
