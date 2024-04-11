@@ -13,6 +13,8 @@ end
 --[[ loadstring(game:HttpGet("https://raw.githubusercontent.com/LegoHacker1337/legohacks/main/PhysicsServiceOnClient.lua"))() ]]
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/mstudio45/LinoriaLib/main/Library.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/mstudio45/LinoriaLib/main/addons/SaveManager.lua"))()
+local Options = getgenv().Options
+local Toggles = getgenv().Toggles
 SaveManager:SetLibrary(Library)
 SaveManager:SetFolder("FurryHBE")
 
