@@ -20,12 +20,8 @@ function baseEntity:GetHumanoid()
 	local character = self:GetCharacter()
 	return if character then character:FindFirstChildWhichIsA("Humanoid") else nil
 end
-function baseEntity:GetHealth()
-	local humanoid = self:GetHumanoid()
-	return if humanoid then humanoid.Health else 0
-end
 function baseEntity:GetTeam() return nil end
-function baseEntity:GetTeamColelse() return nil end
+function baseEntity:GetTeamColor() return Color3.fromRGB(255, 255, 255) end
 function baseEntity:isDead()
 	local humanoid = self:GetHumanoid()
 	return if humanoid then humanoid:GetState() == Enum.HumanoidStateType.Dead else true
