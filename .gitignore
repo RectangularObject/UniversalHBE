@@ -10,3 +10,8 @@
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+darklua.exe
+dlconfig.json
+compile.cmd
+compiled/
