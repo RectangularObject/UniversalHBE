@@ -6,11 +6,9 @@ local classes = {
 local overrides = {}
 
 local override = overrides[game.GameId]
-if override then
-	for class, funcs in override do
-		for func, callback in funcs do
-			classes[class][func] = callback
-		end
+for class, funcs in override do
+	for func, callback in funcs do
+		classes[class][func] = callback
 	end
 end
 return override ~= nil
