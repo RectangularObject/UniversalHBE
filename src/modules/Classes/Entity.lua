@@ -23,6 +23,10 @@ function baseEntity:GetHumanoid()
 	local character = self:GetCharacter()
 	return if character then character:FindFirstChildWhichIsA("Humanoid") else nil
 end
+function baseEntity:GetRootPart()
+	local character = self:GetCharacter()
+	return if character then character.PrimaryPart else nil
+end
 function baseEntity:GetTeam() return nil end
 function baseEntity:GetTeamColor() return Color3.fromRGB(255, 255, 255) end
 
@@ -32,7 +36,7 @@ function baseEntity:isDead()
 end
 function baseEntity:isFFed()
 	local character = self:GetCharacter()
-	return if character then character:FindFirstChildWhichIsA("ForceField") else false
+	return if character then character:FindFirstChildWhichIsA("ForceField") ~= nil else false
 end
 function baseEntity:isSitting()
 	local humanoid = self:GetHumanoid()

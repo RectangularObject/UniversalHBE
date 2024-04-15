@@ -13,6 +13,7 @@ local function addEntity(entity: table)
 	local debounce = false
 
 	local function unSpoofPart(part: BasePart)
+		if not spoofedProperties[part] then return end
 		local partHooks = spoofedProperties[part].hooks
 		partHooks.getSizeHook:Remove()
 		partHooks.setSizeHook:Remove()
@@ -24,8 +25,8 @@ local function addEntity(entity: table)
 		partHooks.setCanCollideHook:Remove()
 		spoofedProperties[part] = nil
 	end
-
 	local function spoofPart(part: BasePart)
+		if spoofedProperties[part] then return end
 		spoofedProperties[part] = {
 			hooks = {},
 		}
@@ -68,15 +69,15 @@ local function addEntity(entity: table)
 		end)
 		part.Destroying:Connect(function() unSpoofPart(part) end)
 	end
-
 	local function unSpoofDecal(decal: Decal)
+		if not spoofedProperties[decal] then return end
 		local decalHooks = spoofedProperties[decal].hooks
 		decalHooks.getTransparencyHook:Remove()
 		decalHooks.setTransparencyHook:Remove()
 		spoofedProperties[decal] = nil
 	end
-
 	local function spoofDecal(decal: Decal)
+		if spoofedProperties[decal] then return end
 		spoofedProperties[decal] = {
 			hooks = {},
 		}
@@ -96,59 +97,68 @@ local function addEntity(entity: table)
 		end)
 		decal.Destroying:Connect(function() unSpoofDecal(decal) end)
 	end
+	local function isInvalidTarget()
+		-- stylua: ignore
+		return entity:isDead()
+			or if Toggles.ignoreFF.Value then entity:isFFed() else false
+			or if Toggles.ignoreTeammates.Value then entity:isTeammate() else false
+			or if Toggles.ignoreSitting.Value then entity:isSitting() else false
+			or entity:isIgnored()
+	end
 
-	local function updatePart(part: BasePart)
-		if not spoofedProperties[part] then spoofPart(part) end
+	local function resizePart(part, condition)
+		spoofPart(part)
 		debounce = true
-		if not Toggles.hitboxToggle.Value or unloading then
-			part.Size = spoofedProperties[part].Size
-			part.Transparency = spoofedProperties[part].Transparency
-			part.CanCollide = spoofedProperties[part].CanCollide
-			part.Massless = spoofedProperties[part].Massless
-			if unloading then unSpoofPart(part) end
+		if not unloading and Toggles.hitboxToggle.Value and condition and not isInvalidTarget() then
+			local size = Options.hitboxSize.Value
+			part.Massless = if part ~= part.Parent.PrimaryPart then true else false
+			part.CanCollide = Toggles.collisionsToggle.Value
+			part.Transparency = Options.hitboxTransparency.Value
+			part.Size = Vector3.new(size, size, size)
 			for _, child in part:GetChildren() do
 				if not child:IsA("Decal") then continue end
-				if spoofedProperties[child] then
-					if unloading then unSpoofDecal(child) end
-					continue
-				end
 				spoofDecal(child)
-				child.Transparency = spoofedProperties[child].Transparency
+				child.Transparency = Options.hitboxTransparency.Value
 			end
 			return
 		end
-		local size = Options.hitboxSize.Value
-		part.Massless = true
-		part.CanCollide = Options.collisionsToggle.Value
-		part.Transparency = Options.hitboxTransparency.Value
-		part.Size = Vector3.new(size, size, size)
+		part.Size = spoofedProperties[part].Size
+		part.Transparency = spoofedProperties[part].Transparency
+		part.CanCollide = spoofedProperties[part].CanCollide
+		part.Massless = spoofedProperties[part].Massless
+		if unloading then unSpoofPart(part) end
 		for _, child in part:GetChildren() do
 			if not child:IsA("Decal") then continue end
-			if spoofedProperties[child] then continue end
+			if unloading then
+				unSpoofDecal(child)
+				continue
+			end
 			spoofDecal(child)
-			child.Transparency = Options.hitboxTransparency.Value
+			child.Transparency = spoofedProperties[child].Transparency
 		end
 		debounce = false
 	end
 
 	function entity:hitboxStep()
-		if not Toggles.hitboxToggle.Value then return end
 		local character: Model = self:GetCharacter()
 		if not character then return end
-		local activeValues: table = Options.hitboxPartList:GetActiveValues()
 		local humanoid: Humanoid = self:GetHumanoid()
+		local activeValues = {}
+		for _, value in Options.hitboxPartList:GetActiveValues() do
+			local formattedValue = string.gsub(value, "%s+", "")
+			activeValues[formattedValue] = true
+		end
 		for _, part in character:GetChildren() do
 			if not part:IsA("BasePart") then continue end
-			if activeValues["Custom Part"] then
-				-- stylua: ignore
-				if string.match(part.Name, Options.customPartName.Value) then updatePart(part) continue end
+			if string.match(part.Name, Options.customPartName.Value) then
+				resizePart(part, activeValues["Custom Part"])
+				continue
 			end
-			if activeValues["PrimaryPart"] then
-				-- stylua: ignore
-				if part == character.PrimaryPart then updatePart(part) continue end
+			if part == self:GetRootPart() then
+				resizePart(part, activeValues["PrimaryPart"])
+				continue
 			end
-			--stylua: ignore
-			if humanoid then if activeValues[humanoid:GetLimb(part)] then updatePart(part) continue end end
+			if humanoid:GetLimb(part) ~= Enum.Limb.Unknown then resizePart(part, activeValues[humanoid:GetLimb(part).Name]) end
 		end
 	end
 
@@ -201,7 +211,9 @@ end
 
 function hitboxHandler:updateHitbox()
 	-- stylua: ignore
-	for _, player in EntHandler:GetPlayers() do player:hitboxStep() end
+	for _, player in EntHandler:GetPlayers() do
+		player:hitboxStep()
+	end
 end
 function hitboxHandler:Load()
     -- stylua: ignore

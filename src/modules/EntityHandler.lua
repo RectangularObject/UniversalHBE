@@ -17,8 +17,7 @@ local function PlayerAdded(player)
 
 	function playerObject:isIgnored()
 		-- stylua: ignore
-		return if Toggles.ignoreTeammates.Value then self:isTeammate()
-			elseif Toggles.ignoreSelectedTeams.Value then table.find(Options.ignoreTeamList:GetActiveValues(), tostring(self:GetTeam()))
+		return if Toggles.ignoreSelectedTeams.Value then table.find(Options.ignoreTeamList:GetActiveValues(), tostring(self:GetTeam()))
 			elseif Toggles.ignoreSelectedPlayers.Value then table.find(Options.ignorePlayerList:GetActiveValues(), tostring(self:GetName()))
 			else false
 	end
