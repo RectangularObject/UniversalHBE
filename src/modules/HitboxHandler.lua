@@ -135,7 +135,7 @@ local function addEntity(entity: table)
 		if not Toggles.hitboxToggle.Value then return end
 		local character: Model = self:GetCharacter()
 		if not character then return end
-		local activeValues: table = Options.expanderPartList:GetActiveValues()
+		local activeValues: table = Options.hitboxPartList:GetActiveValues()
 		local humanoid: Humanoid = self:GetHumanoid()
 		for _, part in character:GetChildren() do
 			if not part:IsA("BasePart") then continue end
