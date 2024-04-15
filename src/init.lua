@@ -1,17 +1,23 @@
 if not game:IsLoaded() then game.Loaded:Wait() end
 
-local EntHandler = require("./modules/EntityHandler.lua")
+local EntityHandler = require("./modules/EntityHandler.lua")
+local HitboxHandler = require("./modules/HitboxHandler.lua")
 local UI = require("./modules/UI.lua")
-local VisHandler = require("./modules/VisualHandler.lua")
+local VisualHandler = require("./modules/VisualHandler.lua")
 local gameoverride = require("./modules/Overrides.lua")
+local lib = UI.Library
 
-EntHandler:Load()
 UI:Load()
-VisHandler:Load()
+EntityHandler:Load()
+VisualHandler:Load()
+HitboxHandler:Load()
 
-if gameoverride then UI.Library:Notify("This game has custom support!", nil, 8549385246) end
+lib:Notify("hai :3", nil, 8549385246)
+lib:Notify(`Press {lib.ToggleKeybind.Value} to open the menu`, nil, 8549385246)
+if gameoverride then lib:Notify("This game has custom support!", nil, 8549385246) end
 
-UI.Library:OnUnload(function()
-	VisHandler:Unload()
-	EntHandler:Unload()
+lib:OnUnload(function()
+	VisualHandler:Unload()
+	EntityHandler:Unload()
+	HitboxHandler:Unload()
 end)
