@@ -18,6 +18,6 @@ if gameoverride then lib:Notify("This game has custom support!", nil, 8549385246
 
 lib:OnUnload(function()
 	VisualHandler:Unload()
-	EntityHandler:Unload()
 	HitboxHandler:Unload()
+	EntityHandler:Unload()
 end)
