@@ -1,8 +1,5 @@
 local Event = require("./Classes/Event.lua")
 local Player = require("./Classes/Player.lua")
-local UI = require("./UI.lua")
-local Toggles = UI.Toggles
-local Options = UI.Options
 local PlayerService: Players = cloneref(game:GetService("Players"))
 local entityHandler = {
 	onPlayerAdded = Event.new(),
@@ -13,16 +10,7 @@ local playerList = {}
 
 local function PlayerAdded(player)
 	playerList[player] = Player.new(player)
-	local playerObject = playerList[player]
-
-	function playerObject:isIgnored()
-		-- stylua: ignore
-		return if Toggles.ignoreSelectedTeams.Value then table.find(Options.ignoreTeamList:GetActiveValues(), tostring(self:GetTeam()))
-			elseif Toggles.ignoreSelectedPlayers.Value then table.find(Options.ignorePlayerList:GetActiveValues(), tostring(self:GetName()))
-			else false
-	end
-
-	entityHandler.onPlayerAdded:Fire(playerObject)
+	entityHandler.onPlayerAdded:Fire(playerList[player])
 end
 local function PlayerRemoving(player)
 	entityHandler.onPlayerRemoved:Fire(playerList[player])
@@ -39,10 +27,12 @@ function entityHandler:Load()
 end
 function entityHandler:GetPlayers() return playerList end
 function entityHandler:Unload()
-	for _, connection in pairs(connections) do
-		connection:Disconnect()
+	local connectionTables = { connections, entityHandler.onPlayerAdded.connections, entityHandler.onPlayerRemoved.connections }
+	for _, connectionTable in connectionTables do
+		for _, connection in connectionTable do
+			connection:Disconnect()
+		end
 	end
-
 	playerList = nil
 end
 

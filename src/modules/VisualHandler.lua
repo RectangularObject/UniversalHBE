@@ -14,8 +14,10 @@ local connections = {
 
 local function updateEsp(self, pos)
 	local nameEsp = self.nameEsp
-	-- stylua: ignore
-	if not Toggles.nameToggle.Value then nameEsp.Visible = false return end
+	if not Toggles.nameToggle.Value then
+		nameEsp.Visible = false
+		return
+	end
 	nameEsp.Text = if Options.nameType.Value == "Display Name" then self:GetDisplayName() else self:GetName()
 	nameEsp.Color = if Toggles.nameUseTeamColor.Value then self:GetTeamColor() else Options.nameFillColor.Value
 	nameEsp.OutlineColor = Options.nameOutlineColor.Value
@@ -25,8 +27,13 @@ local function updateEsp(self, pos)
 end
 
 local function updateChams(self)
-	-- stylua: ignore
-	if not Toggles.chamsToggle.Value then if self.chams then self.chams:Destroy() self.chams = nil end return end
+	if not Toggles.chamsToggle.Value then
+		if self.chams then
+			self.chams:Destroy()
+			self.chams = nil
+		end
+		return
+	end
 	if not self.chams then self.chams = Instance.new("Highlight", CoreGui) end
 	local chams = self.chams
 	local useTeamColor = Toggles.chamsUseTeamColor.Value
@@ -41,17 +48,30 @@ local function updateChams(self)
 end
 
 local function addEntity(entity: table)
-	-- stylua: ignore
-	local nameEsp = Drawing.new("Text") nameEsp.Center = true nameEsp.Outline = true
+	local nameEsp = Drawing.new("Text")
+	nameEsp.Center = true
+	nameEsp.Outline = true
 	entity.nameEsp = nameEsp
 	entity.chams = nil
 
 	function entity:espStep()
-		-- stylua: ignore start
-		if not self:GetCharacter() then if self.chams then self.chams:Destroy() self.chams = nil end nameEsp.Visible = false return end
+		if not self:GetCharacter() then
+			if self.chams then
+				self.chams:Destroy()
+				self.chams = nil
+			end
+			nameEsp.Visible = false
+			return
+		end
 		local pos, vis = WorldToViewportPoint(Camera, self:GetPosition())
-		if not vis then if self.chams then self.chams:Destroy() self.chams = nil end nameEsp.Visible = false return end
-		-- stylua: ignore end
+		if not vis then
+			if self.chams then
+				self.chams:Destroy()
+				self.chams = nil
+			end
+			nameEsp.Visible = false
+			return
+		end
 		updateEsp(self, pos)
 		updateChams(self)
 	end
@@ -62,13 +82,15 @@ local function removeEntity(entity: table)
 end
 
 function visualHandler:Load()
-	-- stylua: ignore
-	for _, entity in EntHandler:GetPlayers() do addEntity(entity) end
+	for _, entity in EntHandler:GetPlayers() do
+		addEntity(entity)
+	end
 	table.insert(connections, EntHandler.onPlayerAdded:Connect(addEntity))
 	table.insert(connections, EntHandler.onPlayerRemoved:Connect(removeEntity))
-	RunService:BindToRenderStep("furryWalls", Enum.RenderPriority.Camera.Value - 1, function(deltaTime)
-		-- stylua: ignore
-		for _, player in EntHandler:GetPlayers() do player:espStep() end
+	RunService:BindToRenderStep("furryWalls", Enum.RenderPriority.Camera.Value - 1, function()
+		for _, player in EntHandler:GetPlayers() do
+			player:espStep()
+		end
 	end)
 end
 function visualHandler:Unload()
