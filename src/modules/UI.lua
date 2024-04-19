@@ -1,5 +1,5 @@
-local LinoriaLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/mstudio45/LinoriaLib/main/Library.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/mstudio45/LinoriaLib/main/addons/SaveManager.lua"))()
+local LinoriaLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/RectangularObject/LinoriaLib/main/Library.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/RectangularObject/LinoriaLib/main/addons/SaveManager.lua"))()
 SaveManager:SetLibrary(LinoriaLib)
 SaveManager:SetFolder("UniversalHBE")
 local UI = {
@@ -42,16 +42,16 @@ function UI:Load()
 
 	local miscGroup = mainTab:AddLeftGroupbox("Misc")
 	miscGroup:AddLabel("Toggle UI"):AddKeyPicker("menuKeybind", { Default = "Delete", NoUI = true, Text = "Menu Keybind" })
-	miscGroup:AddButton("Unload", LinoriaLib.Unload)
+	miscGroup:AddButton({ Text = "Unload", DoubleClick = true, Func = LinoriaLib.Unload })
 
 	local ignoresGroup = mainTab:AddRightGroupbox("Ignores")
 	ignoresGroup:AddToggle("ignoreTeammates", { Text = "Ignore Teammates" })
 	ignoresGroup:AddToggle("ignoreFF", { Text = "Ignore Forcefielded Players" })
 	ignoresGroup:AddToggle("ignoreSitting", { Text = "Ignore Sitting Players" })
 	ignoresGroup:AddToggle("ignoreSelectedPlayers", { Text = "Ignore Selected Players" })
-	ignoresGroup:AddDropdown("ignorePlayerList", { Text = "Players", SpecialType = "Player", Multi = true })
+	ignoresGroup:AddDropdown("ignorePlayerList", { Text = "Players", Multi = true, AllowNull = true, Values = {} })
 	ignoresGroup:AddToggle("ignoreSelectedTeams", { Text = "Ignore Selected Teams" })
-	ignoresGroup:AddDropdown("ignoreTeamList", { Text = "Teams", SpecialType = "Team", Multi = true })
+	ignoresGroup:AddDropdown("ignoreTeamList", { Text = "Teams", Multi = true, SpecialType = "Team" })
 
 	LinoriaLib.ToggleKeybind = UI.Options.menuKeybind
 	SaveManager:BuildConfigSection(mainTab)
