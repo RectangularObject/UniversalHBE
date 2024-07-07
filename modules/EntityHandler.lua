@@ -1,6 +1,6 @@
 local Event = require("./Classes/Event.lua")
 local Player = require("./Classes/Player.lua")
-local Players: Players = cloneref(game:GetService("Players"))
+local Players = cloneref(game:GetService("Players"))
 local entityHandler = {
 	PlayerAdded = Event.new(),
 	PlayerRemoving = Event.new(),

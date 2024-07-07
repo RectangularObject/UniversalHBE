@@ -1,4 +1,4 @@
-local localPlayer: Player = cloneref(game:GetService("Players")).LocalPlayer
+local localPlayer = cloneref(game:GetService("Players")).LocalPlayer
 
 local baseEntity = {}
 baseEntity.__index = baseEntity
