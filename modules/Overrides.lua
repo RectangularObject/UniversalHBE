@@ -12,5 +12,6 @@ if override then
 			classes[class][func] = callback
 		end
 	end
+	return true
 end
-return override ~= nil
+return false
