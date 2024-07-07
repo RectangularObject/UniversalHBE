@@ -11,6 +11,7 @@
 # Built Visual Studio Code Extensions
 *.vsix
 
+stylua.exe
 darklua.exe
 dlconfig.json
 compile.cmd

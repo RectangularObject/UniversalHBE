@@ -19,11 +19,11 @@ for _, player in EntityHandler:GetPlayers() do
 	table.insert(ignorePlayerList.Values, player:GetName())
 	updateList()
 end
-EntityHandler.onPlayerAdded:Connect(function(player)
+EntityHandler.PlayerAdded:Connect(function(player)
 	table.insert(ignorePlayerList.Values, player:GetName())
 	updateList()
 end)
-EntityHandler.onPlayerRemoved:Connect(function(player)
+EntityHandler.PlayerRemoving:Connect(function(player)
 	table.remove(ignorePlayerList.Values, table.find(ignorePlayerList.Values, player:GetName()))
 	updateList()
 end)
@@ -61,7 +61,7 @@ UI.Library:OnUnload(function()
 	getgenv().FurryHBE = nil
 end)
 
-HitboxHandler:updateHitbox()
+HitboxHandler.updateHitbox()
 
 UI.Library:Notify("hai :3")
 UI.Library:Notify(`Press {UI.Library.ToggleKeybind.Value} to open the menu`)

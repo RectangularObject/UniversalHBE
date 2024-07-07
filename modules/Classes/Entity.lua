@@ -42,8 +42,6 @@ function baseEntity:isSitting()
 	local humanoid = self:GetHumanoid()
 	return if humanoid then humanoid.Sit else false
 end
-function baseEntity:isTeammate()
-	return localPlayer.Team == self:GetTeam()
-end
+function baseEntity:isTeammate() return localPlayer.Team == self:GetTeam() end
 
 return baseEntity

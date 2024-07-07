@@ -1,0 +1,7 @@
+{
+    "luau-lsp.types.definitionFiles": [
+        "mtapiTypes.d.lua",
+        "exploitTypes.d.lua"
+    ],
+    "luau-lsp.types.robloxSecurityLevel": "RobloxScriptSecurity"
+}

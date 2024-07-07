@@ -1,7 +1,13 @@
-local LinoriaLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/RectangularObject/LinoriaLib/main/Library.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/RectangularObject/LinoriaLib/main/addons/SaveManager.lua"))()
+local _linorialib = request({ Url = "https://raw.githubusercontent.com/RectangularObject/LinoriaLib/main/Library.lua" })
+assert(_linorialib.Success, "Failed to request Library.lua")
+local _savemanager = request({ Url = "https://raw.githubusercontent.com/RectangularObject/LinoriaLib/main/addons/SaveManager.lua" })
+assert(_savemanager.Success, "Failed to request SaveManager.lua")
+
+local LinoriaLib = loadstring(_linorialib.Body)()
+local SaveManager = loadstring(_savemanager.Body)()
 SaveManager:SetLibrary(LinoriaLib)
 SaveManager:SetFolder("UniversalHBE")
+
 local UI = {
 	Library = LinoriaLib,
 	Options = getgenv().Options,
@@ -22,8 +28,8 @@ function UI:Load()
 		Text = "Body Parts",
 		AllowNull = true,
 		Multi = true,
-		Values = { "Custom Part", "Head", "PrimaryPart", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg" },
-		Default = "PrimaryPart",
+		Values = { "Custom Part", "Head", "HumanoidRootPart", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg" },
+		Default = "HumanoidRootPart",
 	})
 
 	local espGroup = mainTab:AddLeftGroupbox("ESP")

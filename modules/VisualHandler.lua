@@ -1,15 +1,15 @@
 local EntHandler = require("./EntityHandler.lua")
 local UI = require("./UI.lua")
-local RunService: RunService = cloneref(game:GetService("RunService"))
-local Workspace: Workspace = cloneref(game:GetService("Workspace"))
-local CoreGui: CoreGui = cloneref(game:GetService("CoreGui"))
+local RunService = cloneref(game:GetService("RunService"))
+local Workspace = cloneref(game:GetService("Workspace"))
+local CoreGui = cloneref(game:GetService("CoreGui"))
 local Camera = Workspace.CurrentCamera
 local WorldToViewportPoint = clonefunction(Camera.WorldToViewportPoint)
 local Toggles = UI.Toggles
 local Options = UI.Options
 local visualHandler = {}
 local connections = {
-	[1] = Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() Camera = Workspace.CurrentCamera end),
+	Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() Camera = Workspace.CurrentCamera end),
 }
 
 local function updateEsp(self, pos)
@@ -34,7 +34,7 @@ local function updateChams(self)
 		end
 		return
 	end
-	if not self.chams then self.chams = Instance.new("Highlight", CoreGui) end
+	if not self.chams then self.chams = Instance.new("Highlight") end
 	local chams = self.chams
 	local useTeamColor = Toggles.chamsUseTeamColor.Value
 	local teamColor = self:GetTeamColor()
@@ -45,9 +45,10 @@ local function updateChams(self)
 	chams.DepthMode = Enum.HighlightDepthMode[Options.chamsDepthMode.Value]
 	chams.Adornee = self:GetCharacter()
 	chams.Enabled = true
+	chams.Parent = CoreGui
 end
 
-local function addEntity(entity: table)
+local function addEntity(entity)
 	local nameEsp = Drawing.new("Text")
 	nameEsp.Center = true
 	nameEsp.Outline = true
@@ -76,7 +77,7 @@ local function addEntity(entity: table)
 		updateChams(self)
 	end
 end
-local function removeEntity(entity: table)
+local function removeEntity(entity)
 	entity.nameEsp:Destroy()
 	if entity.chams then entity.chams:Destroy() end
 end
@@ -85,9 +86,9 @@ function visualHandler:Load()
 	for _, entity in EntHandler:GetPlayers() do
 		addEntity(entity)
 	end
-	table.insert(connections, EntHandler.onPlayerAdded:Connect(addEntity))
-	table.insert(connections, EntHandler.onPlayerRemoved:Connect(removeEntity))
-	RunService:BindToRenderStep("furryWalls", Enum.RenderPriority.Camera.Value - 1, function()
+	table.insert(connections, EntHandler.PlayerAdded:Connect(addEntity))
+	table.insert(connections, EntHandler.PlayerRemoving:Connect(removeEntity))
+	RunService:BindToRenderStep("furryESP", Enum.RenderPriority.Camera.Value - 1, function()
 		for _, player in EntHandler:GetPlayers() do
 			player:espStep()
 		end
@@ -97,7 +98,7 @@ function visualHandler:Unload()
 	for _, connection in connections do
 		connection:Disconnect()
 	end
-	RunService:UnbindFromRenderStep("furryWalls")
+	RunService:UnbindFromRenderStep("furryESP")
 	for _, player in EntHandler:GetPlayers() do
 		removeEntity(player)
 	end
