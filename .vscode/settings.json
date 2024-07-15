@@ -1,0 +1,6 @@
+{
+    "luau-lsp.types.definitionFiles": [
+        "celeryTypes.d.lua",
+        "mtapiTypes.d.lua"
+    ]
+}
