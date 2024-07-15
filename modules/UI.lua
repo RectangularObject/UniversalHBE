@@ -1,10 +1,10 @@
 local _linorialib = request({ Url = "https://raw.githubusercontent.com/RectangularObject/LinoriaLib/main/Library.lua" })
-assert(_linorialib.Success, "Failed to request Library.lua")
+assert(_linorialib.StatusCode == 200, "Failed to request Library.lua")
 local _savemanager = request({ Url = "https://raw.githubusercontent.com/RectangularObject/LinoriaLib/main/addons/SaveManager.lua" })
-assert(_savemanager.Success, "Failed to request SaveManager.lua")
+assert(_savemanager.StatusCode == 200, "Failed to request SaveManager.lua")
 
-local LinoriaLib = loadstring(_linorialib.Body)()
-local SaveManager = loadstring(_savemanager.Body)()
+local LinoriaLib = (loadstring(_linorialib.Body) :: (...any) -> ...any)()
+local SaveManager = (loadstring(_savemanager.Body) :: (...any) -> ...any)()
 SaveManager:SetLibrary(LinoriaLib)
 SaveManager:SetFolder("UniversalHBE")
 

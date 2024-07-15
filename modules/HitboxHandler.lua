@@ -7,7 +7,7 @@ local connections = {}
 
 if not getgenv().MTAPIMutex then
 	local _mtapi = request({ Url = "https://raw.githubusercontent.com/RectangularObject/MT-Api-v2/main/__source/mt-api%20v2.lua" })
-	assert(_mtapi.Success, "Failed to request mt-api v2.lua")
+	assert(_mtapi.StatusCode == 200, "Failed to request mt-api v2.lua")
 	loadstring(_mtapi.Body)
 end
 local function addEntity(entity)
