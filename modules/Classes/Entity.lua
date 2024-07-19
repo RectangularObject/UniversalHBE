@@ -1,6 +1,26 @@
 local localPlayer = cloneref(game:GetService("Players")).LocalPlayer
 
-local baseEntity = {}
+type EntityImpl = {
+	__index: EntityImpl,
+	new: (ent: Instance) -> Entity,
+	GetType: (self: Entity) -> string,
+	GetCharacter: (self: Entity) -> Model?,
+	GetName: (self: Entity) -> string,
+	GetDisplayName: (self: Entity) -> string,
+	GetPosition: (self: Entity) -> Vector3?,
+	GetCFrame: (self: Entity) -> CFrame?,
+	GetHumanoid: (self: Entity) -> Humanoid?,
+	GetRootPart: (self: Entity) -> BasePart?,
+	GetTeam: (self: Entity) -> Team?,
+	GetTeamColor: (self: Entity) -> Color3,
+	isDead: (self: Entity) -> boolean,
+	isFFed: (self: Entity) -> boolean,
+	isSitting: (self: Entity) -> boolean,
+	isTeammate: (self: Entity) -> boolean,
+}
+type Entity = typeof(setmetatable({} :: { entity: Instance }, {} :: EntityImpl))
+
+local baseEntity: EntityImpl = {} :: EntityImpl
 baseEntity.__index = baseEntity
 
 function baseEntity.new(ent)
