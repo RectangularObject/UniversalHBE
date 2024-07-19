@@ -2,5 +2,10 @@
     "luau-lsp.types.definitionFiles": [
         "celeryTypes.d.lua",
         "mtapiTypes.d.lua"
+    ],
+    "luau-lsp.ignoreGlobs": [
+        "**/_Index/**",
+        "compiled/*",
+        ".history/*"
     ]
 }
