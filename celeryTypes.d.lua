@@ -24,20 +24,20 @@ declare function mousemoveabs(x: number, y: number): ()
 declare function fromclipboard(...:any): ...any
 declare function mouse2release(): ()
 declare function getsenv(script: LocalScript | ModuleScript): { [string]: any }
-declare function setrawmetatable(object: { any }, metatable: { any }): ()
+declare function setrawmetatable(object: { [any]: any }, metatable: { [any]: any }): ()
 declare function checkcaller(): boolean
 declare function dumpstring(script: LocalScript | ModuleScript): string
 declare function getfenv(...:any): ...any
 declare function lz4compress(data: string): string
 declare function mouse1release(): ()
 declare function rconsolesettitle(title: string): ()
-declare function setreadonly(object: { any }, readonly: boolean): ()
+declare function setreadonly(object: { [any]: any }, readonly: boolean): ()
 declare function consolecreate(): ()
 declare function mouse1press(): ()
 declare function getexecutorname(...:any): ...any
 declare function lz4decompress(data: string, size: number): string
-declare function getrawmetatable(object: { any }): { any }
-declare function setrenderproperty(drawing: { any }, property: string, value: any): ()
+declare function getrawmetatable(object: { [any]: any }): { [any]: any }
+declare function setrenderproperty(drawing: { [any]: any }, property: string, value: any): ()
 declare function getreg(...:any): ...any
 declare function rconsoleprint(text: string): ()
 declare base64: {
@@ -93,10 +93,10 @@ declare Drawing: {
 		Plex: number,
 		System: number,
 	},
-	new: (type: "Line" | "Text" | "Image" | "Circle" | "Square" | "Quad" | "Triangle") -> { any },
+	new: (type: "Line" | "Text" | "Image" | "Circle" | "Square" | "Quad" | "Triangle") -> { [any]: any },
 }
 declare function request(table: HttpRequestOptions): HttpResponseData
-declare function getrenderproperty(drawing: { any }, property: string): any
+declare function getrenderproperty(drawing: { [any]: any }, property: string): any
 declare function readfile(path: string): string
 declare function rconsoledestroy(): ()
 declare function getobjects(...:any): ...any
@@ -112,7 +112,7 @@ declare function rconsolename(title: string): ()
 declare function getcustomasset(path: string, noCache: boolean): string
 declare function isexecutorclosure(func: (...any) -> ...any): boolean
 declare function isluau(...:any): ...any
-declare function hookmetamethod(object: { any }, method: string, hook: (...any) -> ...any): (...any) -> ...any
+declare function hookmetamethod(object: { [any]: any }, method: string, hook: (...any) -> ...any): (...any) -> ...any
 declare function setfpscap(fps: number): ()
 declare function isourclosure(func: (...any) -> ...any): boolean
 declare function setthreadcontext(identity: number): ()
@@ -153,7 +153,7 @@ declare function getscriptbytecode(script: LocalScript | ModuleScript): string
 declare function consoleclear(): ()
 declare function clonefunction<T>(func: T): T
 declare function getnilinstances(): { Instance }
-declare function getgc(includeTables: boolean?): { (...any) -> ...any | Instance | { any } }
+declare function getgc(includeTables: boolean?): { (...any) -> ...any | Instance | { [any]: any } }
 declare function getallthreads(...:any): ...any
 declare function iscclosure(func: (...any) -> ...any): boolean
 declare function getmodules(...:any): ...any
@@ -168,7 +168,7 @@ declare function makewriteable(...:any): ...any
 declare function rconsoleinput(): string
 declare function rconsolecreate(): ()
 declare function setclipboard(text: string): ()
-declare function isreadonly(object: { any }): boolean
+declare function isreadonly(object: { [any]: any }): boolean
 declare function saveinstance(...:any): ...any
 declare function mouse2click(): ()
 declare function dofile(path: string): ()
