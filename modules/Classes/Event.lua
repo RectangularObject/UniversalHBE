@@ -1,4 +1,11 @@
-local baseConnection = {}
+type ConnectionImpl = {
+	__index: ConnectionImpl,
+	new: (callback: (...any) -> ...any) -> Connection,
+	Disconnect: (self: Connection) -> (),
+}
+type Connection = typeof(setmetatable({} :: {}, {} :: ConnectionImpl))
+
+local baseConnection: ConnectionImpl = {} :: ConnectionImpl
 baseConnection.__index = baseConnection
 
 function baseConnection.new(callback)
@@ -10,7 +17,15 @@ function baseConnection:Disconnect()
 	self = nil
 end
 
-local baseEvent = {}
+type EventImpl = {
+	__index: EventImpl,
+	new: () -> Event,
+	Connect: (self: Event, callback: (...any) -> ...any) -> Connection,
+	Fire: (self: Event, ...any) -> (),
+}
+type Event = typeof(setmetatable({} :: {}, {} :: EventImpl))
+
+local baseEvent: EventImpl = {} :: EventImpl
 baseEvent.__index = baseEvent
 
 function baseEvent.new()
@@ -22,9 +37,9 @@ function baseEvent:Connect(callback)
 	table.insert(self.connections, connection)
 	return connection
 end
-function baseEvent:Fire(payload)
+function baseEvent:Fire(...)
 	for _, connection in self.connections do
-		connection.callback(payload)
+		connection.callback(...)
 	end
 end
 
