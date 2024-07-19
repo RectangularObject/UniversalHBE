@@ -1,5 +1,12 @@
 local entity = require("./Entity.lua")
-local basePlayer = {}
+
+type PlayerImpl = {
+	__index: PlayerImpl,
+	new: (plr: Player) -> PlayerEnt,
+}
+type PlayerEnt = typeof(setmetatable({} :: {}, {} :: PlayerImpl))
+
+local basePlayer: PlayerImpl = {} :: PlayerImpl
 basePlayer.__index = basePlayer
 setmetatable(basePlayer, entity)
 
