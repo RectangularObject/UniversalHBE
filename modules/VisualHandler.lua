@@ -1,8 +1,8 @@
 local EntHandler = require("./EntityHandler.lua")
+local Log = require("./LogHandler.lua")
 local UI = require("./UI.lua")
 local RunService = cloneref(game:GetService("RunService"))
 local Workspace = cloneref(game:GetService("Workspace"))
-local CoreGui = cloneref(game:GetService("CoreGui"))
 local Camera = Workspace.CurrentCamera
 local WorldToViewportPoint = Camera.WorldToViewportPoint
 local Toggles = UI.Toggles
@@ -12,48 +12,49 @@ local connections = {
 	Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() Camera = Workspace.CurrentCamera end),
 }
 
-local function updateEsp(self, pos)
-	local nameEsp = self.nameEsp
-	if not Toggles.nameToggle.Value then
-		nameEsp.Visible = false
-		return
-	end
-	nameEsp.Text = if Options.nameType.Value == "Display Name" then self:GetDisplayName() else self:GetName()
-	nameEsp.Color = if Toggles.nameUseTeamColor.Value then self:GetTeamColor() else Options.nameFillColor.Value
-	nameEsp.OutlineColor = Options.nameOutlineColor.Value
-	nameEsp.Position = Vector2.new(pos.X, pos.Y)
-	nameEsp.Size = 1000 / pos.Z + 10
-	nameEsp.Visible = true
-end
-
-local function updateChams(self)
-	if not Toggles.chamsToggle.Value then
-		if self.chams then
-			self.chams:Destroy()
-			self.chams = nil
-		end
-		return
-	end
-	if not self.chams then self.chams = Instance.new("Highlight") end
-	local chams = self.chams
-	local useTeamColor = Toggles.chamsUseTeamColor.Value
-	local teamColor = self:GetTeamColor()
-	chams.FillColor = if useTeamColor then teamColor else Options.chamsFillColor.Value
-	chams.FillTransparency = Options.chamsFillColor.Transparency
-	chams.OutlineColor = if useTeamColor then teamColor else Options.chamsOutlineColor.Value
-	chams.OutlineTransparency = Options.chamsOutlineColor.Transparency
-	chams.DepthMode = Enum.HighlightDepthMode[Options.chamsDepthMode.Value]
-	chams.Adornee = self:GetCharacter()
-	chams.Enabled = true
-	chams.Parent = CoreGui
-end
-
 local function addEntity(entity)
 	local nameEsp = Drawing.new("Text")
 	nameEsp.Center = true
 	nameEsp.Outline = true
 	entity.nameEsp = nameEsp
 	entity.chams = nil
+
+	local function updateEsp(pos)
+		local nameEsp = entity.nameEsp
+		if not Toggles.nameToggle.Value then
+			nameEsp.Visible = false
+			return
+		end
+		Log.DebugPrint("updateEsp")
+		nameEsp.Text = if Options.nameType.Value == "Display Name" then entity:GetDisplayName() else entity:GetName()
+		nameEsp.Color = if Toggles.nameUseTeamColor.Value then entity:GetTeamColor() else Options.nameFillColor.Value
+		nameEsp.OutlineColor = Options.nameOutlineColor.Value
+		nameEsp.Position = Vector2.new(pos.X, pos.Y)
+		nameEsp.Size = math.clamp(1000 / pos.Z, 10, math.huge)
+		nameEsp.Visible = true
+	end
+	local function updateChams()
+		if not Toggles.chamsToggle.Value then
+			if entity.chams then
+				entity.chams:Destroy()
+				entity.chams = nil
+			end
+			return
+		end
+		Log.DebugPrint("updateChams")
+		if not entity.chams then entity.chams = Instance.new("Highlight") end
+		local chams = entity.chams
+		local useTeamColor = Toggles.chamsUseTeamColor.Value
+		local teamColor = entity:GetTeamColor()
+		chams.FillColor = if useTeamColor then teamColor else Options.chamsFillColor.Value
+		chams.FillTransparency = Options.chamsFillColor.Transparency
+		chams.OutlineColor = if useTeamColor then teamColor else Options.chamsOutlineColor.Value
+		chams.OutlineTransparency = Options.chamsOutlineColor.Transparency
+		chams.DepthMode = Enum.HighlightDepthMode[Options.chamsDepthMode.Value]
+		chams.Adornee = entity:GetCharacter()
+		chams.Enabled = true
+		chams.Parent = gethui()
+	end
 
 	function entity:espStep()
 		if not self:GetCharacter() then
@@ -73,8 +74,8 @@ local function addEntity(entity)
 			nameEsp.Visible = false
 			return
 		end
-		updateEsp(self, pos)
-		updateChams(self)
+		updateEsp(pos)
+		updateChams()
 	end
 end
 local function removeEntity(entity)
