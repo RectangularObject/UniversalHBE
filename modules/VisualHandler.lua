@@ -53,7 +53,7 @@ local function addEntity(entity)
 	end
 
 	function entity:espStep()
-		if not self:GetCharacter() then
+		if not self:GetCharacter() or self:isDead() then
 			if self.chams then
 				self.chams:Destroy()
 				self.chams = nil
