@@ -1,6 +1,6 @@
 if not game:IsLoaded() then game.Loaded:Wait() end
-if getgenv().FurryHBE then return end
-getgenv().FurryHBE = true
+if _G.FurryHBE then return end
+_G.FurryHBE = true
 
 local EntityHandler = require("./modules/EntityHandler.lua")
 local HitboxHandler = require("./modules/HitboxHandler.lua")
@@ -58,7 +58,7 @@ UI.Library:OnUnload(function()
 	HitboxHandler:Unload()
 	VisualHandler:Unload()
 	EntityHandler:Unload()
-	getgenv().FurryHBE = nil
+	_G.FurryHBE = nil
 end)
 
 HitboxHandler.updateHitbox()
