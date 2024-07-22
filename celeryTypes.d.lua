@@ -93,7 +93,7 @@ declare Drawing: {
 		Plex: number,
 		System: number,
 	},
-	new: (type: "Line" | "Text" | "Image" | "Circle" | "Square" | "Quad" | "Triangle") -> { [any]: any },
+	new: ((type: "Line") -> DrawingLine) & ((type: "Text") -> DrawingText) & ((type: "Image") -> DrawingImage) & ((type: "Circle") -> DrawingCircle) & ((type: "Square") -> DrawingSquare) & ((type: "Quad") -> DrawingQuad) & ((type: "Triangle") -> DrawingTriangle),
 }
 declare function request(table: HttpRequestOptions): HttpResponseData
 declare function getrenderproperty(drawing: { [any]: any }, property: string): any
@@ -176,3 +176,67 @@ declare function consolename(...:any): ...any
 declare function writefile(path: string, data: string): ()
 declare function base64_encode(data: string): string
 declare function loadfile(path: string, chunkname: string?): (((...any) -> ...any)?, string?)
+
+declare class BaseDrawing
+	Visible: boolean
+	ZIndex: number
+	Transparency: number
+	Color: Color3
+	function Destroy(self): ()
+end
+
+declare class DrawingLine extends BaseDrawing
+	From: Vector2
+	To: Vector2
+	Thickness: number
+end
+
+declare class DrawingText extends BaseDrawing
+	Text: string
+	TextBounds: Vector2
+	Font: typeof(Drawing.Fonts)
+	Size: number
+	Position: Vector2
+	Center: boolean
+	Outline: boolean
+	OutlineColor: Color3
+end
+
+declare class DrawingImage extends BaseDrawing
+	Data: string
+	Size: Vector2
+	Position: Vector2
+	Rounding: number
+end
+
+declare class DrawingCircle extends BaseDrawing
+	NumSides: number
+	Radius: number
+	Position: Vector2
+	Thickness: number
+	Filled: boolean
+end
+
+declare class DrawingSquare extends BaseDrawing
+	Size: Vector2
+	Position: Vector2
+	Thickness: number
+	Filled: boolean
+end
+
+declare class DrawingQuad extends BaseDrawing -- this is currently broken on celery
+	PointA: Vector2
+	PointB: Vector2
+	PointC: Vector2
+	PointD: Vector2
+	Thickness: number
+	Filled: boolean
+end
+
+declare class DrawingTriangle extends BaseDrawing -- this is also broken
+	PointA: Vector2
+	PointB: Vector2
+	PointC: Vector2
+	Thickness: number
+	Filled: boolean
+end
