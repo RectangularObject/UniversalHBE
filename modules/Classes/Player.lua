@@ -15,10 +15,10 @@ function basePlayer.new(plr)
 	setmetatable(player, basePlayer)
 	return player
 end
-function basePlayer:GetName() return self.entity.Name end
-function basePlayer:GetDisplayName() return self.entity.DisplayName end
-function basePlayer:GetCharacter() return self.entity.Character end
-function basePlayer:GetTeam() return self.entity.Team end
-function basePlayer:GetTeamColor() return self.entity.TeamColor.Color end
+function basePlayer:GetName() return self.model.Name end
+function basePlayer:GetDisplayName() return self.model.DisplayName end
+function basePlayer:GetCharacter() return self.model.Character end
+function basePlayer:GetTeam() return self.model.Team end
+function basePlayer:GetTeamColor() return self.model.TeamColor.Color end
 
 return basePlayer
