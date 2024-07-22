@@ -1,5 +1,4 @@
 local EntHandler = require("./EntityHandler.lua")
-local Log = require("./LogHandler.lua")
 local UI = require("./UI.lua")
 local RunService = cloneref(game:GetService("RunService"))
 local Workspace = cloneref(game:GetService("Workspace"))
@@ -25,7 +24,6 @@ local function addEntity(entity)
 			nameEsp.Visible = false
 			return
 		end
-		Log.DebugPrint("updateEsp")
 		nameEsp.Text = if Options.nameType.Value == "Display Name" then entity:GetDisplayName() else entity:GetName()
 		nameEsp.Color = if Toggles.nameUseTeamColor.Value then entity:GetTeamColor() else Options.nameFillColor.Value
 		nameEsp.OutlineColor = Options.nameOutlineColor.Value
@@ -41,7 +39,6 @@ local function addEntity(entity)
 			end
 			return
 		end
-		Log.DebugPrint("updateChams")
 		if not entity.chams then entity.chams = Instance.new("Highlight") end
 		local chams = entity.chams
 		local useTeamColor = Toggles.chamsUseTeamColor.Value
