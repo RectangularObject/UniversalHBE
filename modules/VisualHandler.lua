@@ -11,8 +11,9 @@ local connections = {
 	Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() Camera = Workspace.CurrentCamera end),
 }
 
-local function addEntity(entity)
-	local nameEsp = Drawing.new("Text")
+type Entity = typeof(require("./Classes/Entity.lua").new(Instance.new("Model"))) & { nameEsp: DrawingText, chams: Highlight | nil, espStep: (Entity) -> () }
+local function addEntity(entity: Entity)
+	local nameEsp: DrawingText = Drawing.new("Text")
 	nameEsp.Center = true
 	nameEsp.Outline = true
 	entity.nameEsp = nameEsp
@@ -74,7 +75,7 @@ local function addEntity(entity)
 		updateChams()
 	end
 end
-local function removeEntity(entity)
+local function removeEntity(entity: Entity)
 	entity.nameEsp:Destroy()
 	if entity.chams then entity.chams:Destroy() end
 end
