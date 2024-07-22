@@ -19,7 +19,6 @@ local function addEntity(entity)
 	entity.chams = nil
 
 	local function updateEsp(pos)
-		local nameEsp = entity.nameEsp
 		if not Toggles.nameToggle.Value then
 			nameEsp.Visible = false
 			return
