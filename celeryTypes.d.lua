@@ -14,7 +14,7 @@ type HttpResponseData = {
 type CipherMode = "CBC" | "ECB" | "CTR" | "CFB" | "OFB" | "GCM"
 
 declare game: typeof(game) & {
-    HttpGet: (self: DataModel, url: string, nocache: boolean?) -> string
+    HttpGet: (self: DataModel, url: string, nocache: boolean?) -> string,
 }
 declare function getclipboard(): string
 declare function mousescroll(pixels: number): ()
