@@ -87,7 +87,7 @@ function visualHandler:Load()
 	table.insert(connections, EntHandler.PlayerRemoving:Connect(removeEntity))
 	RunService:BindToRenderStep("furryESP", Enum.RenderPriority.Camera.Value - 1, function()
 		for _, player in EntHandler:GetPlayers() do
-			player:espStep()
+			task.spawn(player.espStep, player)
 		end
 	end)
 end
