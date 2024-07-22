@@ -17,8 +17,8 @@ local function updateList()
 end
 for _, player in EntityHandler:GetPlayers() do
 	table.insert(ignorePlayerList.Values, player:GetName())
-	updateList()
 end
+updateList()
 EntityHandler.PlayerAdded:Connect(function(player)
 	table.insert(ignorePlayerList.Values, player:GetName())
 	updateList()
