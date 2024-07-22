@@ -18,50 +18,50 @@ type EntityImpl = {
 	isSitting: (self: Entity) -> boolean,
 	isTeammate: (self: Entity) -> boolean,
 }
-type Entity = typeof(setmetatable({} :: { entity: Instance }, {} :: EntityImpl))
+type Entity = typeof(setmetatable({} :: { model: Instance }, {} :: EntityImpl))
 
-local baseEntity: EntityImpl = {} :: EntityImpl
-baseEntity.__index = baseEntity
+local Entity: EntityImpl = {} :: EntityImpl
+Entity.__index = Entity
 
-function baseEntity.new(ent)
-	local entity = setmetatable({ entity = ent }, baseEntity)
-	return entity
+function Entity.new(entity)
+	local self = setmetatable({ model = entity }, Entity)
+	return self
 end
-function baseEntity:GetType() return typeof(self.entity) end
-function baseEntity:GetCharacter() return self.entity end
-function baseEntity:GetName() return tostring(self:GetCharacter()) end
-function baseEntity:GetDisplayName() return self:GetName() end
-function baseEntity:GetPosition()
+function Entity:GetType() return typeof(self.model) end
+function Entity:GetCharacter() return self.model end
+function Entity:GetName() return tostring(self:GetCharacter()) end
+function Entity:GetDisplayName() return self:GetName() end
+function Entity:GetPosition()
 	local cframe = self:GetCFrame()
 	return if cframe then cframe.Position else nil
 end
-function baseEntity:GetCFrame()
+function Entity:GetCFrame()
 	local character = self:GetCharacter()
 	return if character then character:GetPivot() else nil
 end
-function baseEntity:GetHumanoid()
+function Entity:GetHumanoid()
 	local character = self:GetCharacter()
 	return if character then character:FindFirstChildWhichIsA("Humanoid") else nil
 end
-function baseEntity:GetRootPart()
+function Entity:GetRootPart()
 	local character = self:GetCharacter()
 	return if character then character.PrimaryPart else nil
 end
-function baseEntity:GetTeam() return nil end
-function baseEntity:GetTeamColor() return Color3.fromRGB(255, 255, 255) end
+function Entity:GetTeam() return nil end
+function Entity:GetTeamColor() return Color3.fromRGB(255, 255, 255) end
 
-function baseEntity:isDead()
+function Entity:isDead()
 	local humanoid = self:GetHumanoid()
 	return if humanoid then humanoid:GetState() == Enum.HumanoidStateType.Dead else true
 end
-function baseEntity:isFFed()
+function Entity:isFFed()
 	local character = self:GetCharacter()
 	return if character then character:FindFirstChildWhichIsA("ForceField") ~= nil else false
 end
-function baseEntity:isSitting()
+function Entity:isSitting()
 	local humanoid = self:GetHumanoid()
 	return if humanoid then humanoid.Sit else false
 end
-function baseEntity:isTeammate() return localPlayer.Team == self:GetTeam() end
+function Entity:isTeammate() return localPlayer.Team == self:GetTeam() end
 
-return baseEntity
+return Entity
