@@ -19,11 +19,8 @@ local function addEntity(entity: Entity)
 	entity.nameEsp = nameEsp
 	entity.chams = nil
 
+	local function hideEsp() nameEsp.Visible = false end
 	local function updateEsp(pos)
-		if not Toggles.nameToggle.Value then
-			nameEsp.Visible = false
-			return
-		end
 		nameEsp.Text = if Options.nameType.Value == "Display Name" then entity:GetDisplayName() else entity:GetName()
 		nameEsp.Color = if Toggles.nameUseTeamColor.Value then entity:GetTeamColor() else Options.nameFillColor.Value
 		nameEsp.OutlineColor = Options.nameOutlineColor.Value
@@ -31,14 +28,13 @@ local function addEntity(entity: Entity)
 		nameEsp.Size = math.clamp(1000 / pos.Z, 10, math.huge)
 		nameEsp.Visible = true
 	end
-	local function updateChams()
-		if not Toggles.chamsToggle.Value then
-			if entity.chams then
-				entity.chams:Destroy()
-				entity.chams = nil
-			end
-			return
+	local function hideChams()
+		if entity.chams then
+			entity.chams:Destroy()
+			entity.chams = nil
 		end
+	end
+	local function updateChams()
 		if not entity.chams then entity.chams = Instance.new("Highlight") end
 		local chams = entity.chams
 		local useTeamColor = Toggles.chamsUseTeamColor.Value
@@ -54,25 +50,27 @@ local function addEntity(entity: Entity)
 	end
 
 	function entity:espStep()
-		if not self:GetCharacter() or self:isDead() then
-			if self.chams then
-				self.chams:Destroy()
-				self.chams = nil
-			end
-			nameEsp.Visible = false
+		if self:isDead() then
+			hideEsp()
+			hideChams()
 			return
 		end
 		local pos, vis = WorldToViewportPoint(Camera, self:GetPosition())
 		if not vis then
-			if self.chams then
-				self.chams:Destroy()
-				self.chams = nil
-			end
-			nameEsp.Visible = false
+			hideEsp()
+			hideChams()
 			return
 		end
-		updateEsp(pos)
-		updateChams()
+		if Toggles.nameToggle.Value then
+			updateEsp(pos)
+		else
+			hideEsp()
+		end
+		if Toggles.chamsToggle.Value then
+			updateChams()
+		else
+			hideChams()
+		end
 	end
 end
 local function removeEntity(entity: Entity)
