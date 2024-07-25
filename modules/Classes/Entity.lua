@@ -18,17 +18,14 @@ type EntityImpl = {
 	isSitting: (self: Entity) -> boolean,
 	isTeammate: (self: Entity) -> boolean,
 }
-type Entity = typeof(setmetatable({} :: { model: Instance }, {} :: EntityImpl))
+type Entity = typeof(setmetatable({} :: { instance: Instance }, {} :: EntityImpl))
 
 local Entity: EntityImpl = {} :: EntityImpl
 Entity.__index = Entity
 
-function Entity.new(entity)
-	local self = setmetatable({ model = entity }, Entity)
-	return self
-end
-function Entity:GetType() return typeof(self.model) end
-function Entity:GetCharacter() return self.model end
+function Entity.new(entity) return setmetatable({ instance = entity }, Entity) end
+function Entity:GetType() return typeof(self.instance) end
+function Entity:GetCharacter() return self.instance end
 function Entity:GetName() return tostring(self:GetCharacter()) end
 function Entity:GetDisplayName() return self:GetName() end
 function Entity:GetPosition()

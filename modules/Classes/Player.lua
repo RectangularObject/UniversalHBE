@@ -1,4 +1,4 @@
-local entity = require("./Entity.lua")
+local Entity = require("./Entity.lua")
 
 type PlayerImpl = {
 	__index: PlayerImpl,
@@ -8,17 +8,16 @@ type PlayerEnt = typeof(setmetatable({} :: {}, {} :: PlayerImpl))
 
 local basePlayer: PlayerImpl = {} :: PlayerImpl
 basePlayer.__index = basePlayer
-setmetatable(basePlayer, entity)
+setmetatable(basePlayer, Entity)
 
 function basePlayer.new(plr)
-	local player = entity.new(plr)
-	setmetatable(player, basePlayer)
-	return player
+	local player = Entity.new(plr)
+	return setmetatable(player, basePlayer)
 end
-function basePlayer:GetName() return self.model.Name end
-function basePlayer:GetDisplayName() return self.model.DisplayName end
-function basePlayer:GetCharacter() return self.model.Character end
-function basePlayer:GetTeam() return self.model.Team end
-function basePlayer:GetTeamColor() return self.model.TeamColor.Color end
+function basePlayer:GetName() return self.instance.Name end
+function basePlayer:GetDisplayName() return self.instance.DisplayName end
+function basePlayer:GetCharacter() return self.instance.Character end
+function basePlayer:GetTeam() return self.instance.Team end
+function basePlayer:GetTeamColor() return self.instance.TeamColor.Color end
 
 return basePlayer
