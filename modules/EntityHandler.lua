@@ -8,19 +8,19 @@ local entityHandler = {
 local playerList = {}
 local connections = {}
 
-local function PlayerAdded(player)
-	playerList[player] = Player.new(player)
-	entityHandler.PlayerAdded:Fire(playerList[player])
+local function PlayerAdded(plr)
+	playerList[plr] = Player.new(plr)
+	entityHandler.PlayerAdded:Fire(playerList[plr])
 end
-local function PlayerRemoving(player)
-	entityHandler.PlayerRemoving:Fire(playerList[player])
-	playerList[player] = nil
+local function PlayerRemoving(plr)
+	entityHandler.PlayerRemoving:Fire(playerList[plr])
+	playerList[plr] = nil
 end
 
 function entityHandler:Load()
-	for i, player in ipairs(Players:GetPlayers()) do
+	for i, plr in ipairs(Players:GetPlayers()) do
 		if i == 1 then continue end --skip localplayer
-		PlayerAdded(player)
+		PlayerAdded(plr)
 	end
 	table.insert(connections, Players.PlayerAdded:Connect(PlayerAdded))
 	table.insert(connections, Players.PlayerRemoving:Connect(PlayerRemoving))
