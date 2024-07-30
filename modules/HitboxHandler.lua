@@ -10,21 +10,25 @@ if not _G.MTAPIMutex then
 	assert(_mtapi.StatusCode == 200, "Failed to request mt-api v2.lua")
 	loadstring(_mtapi.Body)
 end
-local function addEntity(entity)
-	local oldProperties = {}
+
+type Entity =
+	typeof(require("./Classes/Entity.lua").new(Instance.new("Model")))
+	& { oldProperties: { [Instance]: { [string]: any } }, hooks: { [string]: mtapiHook }, hitboxStep: (Entity) -> () }
+local function addEntity(entity: Entity)
+	entity.oldProperties = {}
+	entity.hooks = {}
 
 	local function spoofPart(part: BasePart)
 		if not part:IsA("BasePart") then return end
-		oldProperties[part] = {}
-		local partProperties = oldProperties[part]
+		entity.oldProperties[part] = {}
+		local partProperties = entity.oldProperties[part]
 		partProperties.debounce = false
 		partProperties.Size = part.Size
 		partProperties.Transparency = part.Transparency
 		partProperties.Massless = part.Massless
 		partProperties.CanCollide = part.CanCollide
 
-		partProperties.hooks = {}
-		local partHooks = partProperties.hooks
+		local partHooks = entity.hooks
 		partHooks.getSizeHook = part:AddGetHook("Size", function() return partProperties.Size end)
 		partHooks.getsizeHook = part:AddGetHook("size", function() return partProperties.Size end)
 		partHooks.getTransparencyHook = part:AddGetHook("Transparency", function() return partProperties.Transparency end)
@@ -67,8 +71,8 @@ local function addEntity(entity)
 	end
 	local function spoofDecal(decal: Decal)
 		if not decal:IsA("Decal") then return end
-		oldProperties[decal] = {}
-		local decalProperties = oldProperties[decal]
+		entity.oldProperties[decal] = {}
+		local decalProperties = entity.oldProperties[decal]
 		decalProperties.Transparency = decal.Transparency
 
 		local decalHooks = decalProperties.hooks
@@ -102,12 +106,17 @@ function hitboxHandler:Load()
 	for _, player in EntHandler:GetPlayers() do
 		addEntity(player)
 	end
-	EntHandler.PlayerAdded:Connect(addEntity)
+	table.insert(connections, EntHandler.PlayerAdded:Connect(addEntity))
 end
 function hitboxHandler:Unload()
 	for _, connection in connections do
 		connection:Disconnect()
 	end
 	Toggles.hitboxToggle:SetValue(false)
+	for _, player: Entity in EntHandler:GetPlayers() do
+		for _, hook in player.hooks do
+			hook:Remove()
+		end
+	end
 end
 return hitboxHandler
