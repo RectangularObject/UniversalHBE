@@ -11,22 +11,25 @@ if not _G.MTAPIMutex then
 	loadstring(_mtapi.Body)
 end
 
-type Entity =
-	typeof(require("./Classes/Entity.lua").new(Instance.new("Model")))
-	& { oldProperties: { [Instance]: { [string]: any } }, hooks: { [string]: mtapiHook }, hitboxStep: (Entity) -> () }
+type Entity = typeof(require("./Classes/Entity.lua").new(Instance.new("Model"))) & {
+	oldProperties: { [Instance]: { debounce: boolean?, Size: Vector3?, Transparency: number?, Massless: boolean?, CanCollide: boolean? } },
+	hooks: { [string]: mtapiHook },
+	hitboxStep: (Entity) -> (),
+}
 local function addEntity(entity: Entity)
 	entity.oldProperties = {}
 	entity.hooks = {}
 
 	local function spoofPart(part: BasePart)
 		if not part:IsA("BasePart") then return end
-		entity.oldProperties[part] = {}
+		entity.oldProperties[part] = {
+			debounce = false,
+			Size = part.Size,
+			Transparency = part.Transparency,
+			Massless = part.Massless,
+			CanCollide = part.CanCollide,
+		}
 		local partProperties = entity.oldProperties[part]
-		partProperties.debounce = false
-		partProperties.Size = part.Size
-		partProperties.Transparency = part.Transparency
-		partProperties.Massless = part.Massless
-		partProperties.CanCollide = part.CanCollide
 
 		local partHooks = entity.hooks
 		partHooks.getSizeHook = part:AddGetHook("Size", function() return partProperties.Size end)
@@ -71,9 +74,10 @@ local function addEntity(entity: Entity)
 	end
 	local function spoofDecal(decal: Decal)
 		if not decal:IsA("Decal") then return end
-		entity.oldProperties[decal] = {}
+		entity.oldProperties[decal] = {
+			Transparency = decal.Transparency,
+		}
 		local decalProperties = entity.oldProperties[decal]
-		decalProperties.Transparency = decal.Transparency
 
 		local decalHooks = decalProperties.hooks
 		decalHooks.getTransparencyHook = decal:AddGetHook("Transparency", function() return decalProperties.Transparency end)
