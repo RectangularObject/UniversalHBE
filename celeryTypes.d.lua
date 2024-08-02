@@ -16,6 +16,26 @@ type CipherMode = "CBC" | "ECB" | "CTR" | "CFB" | "OFB" | "GCM"
 declare game: typeof(game) & {
     HttpGet: (self: DataModel, url: string, nocache: boolean?) -> string,
 }
+declare debug: typeof(debug) & {
+	dumpheap: (...any) -> ...any, -- no documentation
+	getconstant: (func: (...any) -> ...any | number, index: number) -> any,
+	getproto: (func: (...any) -> ...any | number, index: number, active: boolean?) -> (...any) -> ...any | { (...any) -> ...any },
+	loadmodule: (module: ModuleScript) -> ...any,
+	getstack: (level: number, index: number?) -> any | { any },
+	--setconstants: (...any) -> ...any, -- what
+	getupvalues: (func: (...any) -> ...any | number) -> { any },
+	getupvalue: (func: (...any) -> ...any | number, index: number) -> any,
+	--setprotos: (...any) -> ...any, -- what
+	getconstants: (func: (...any) -> ...any | number) -> { any },
+	getprotos: (func: (...any) -> ...any | number) -> { (...any) -> ...any },
+	setproto: (func: (...any) -> ...any, index: number, replacement: (...any) -> ...any) -> (),
+	getinfo: (func: (...any) -> ...any | number) -> { source: string, short_src: string, func: (...any) -> ...any, what: string, currentline: number, name: string, nups: number, numparams: number, is_vararg: number },
+	setupvalue: (func: (...any) -> ...any | number, index: number, value: any) -> (),
+	setconstant: (func: (...any) -> ...any | number, index: number, value: any) -> (),
+	--setupvalues: (...any) -> ...any, -- what
+	dumprefs: (...any) -> ...any, -- no documentation
+}
+
 declare function getclipboard(): string
 declare function mousescroll(pixels: number): ()
 declare function makefolder(path: string): ()
@@ -176,6 +196,7 @@ declare function consolename(...:any): ...any
 declare function writefile(path: string, data: string): ()
 declare function base64_encode(data: string): string
 declare function loadfile(path: string, chunkname: string?): (((...any) -> ...any)?, string?)
+declare function getnamecallmethod(): string
 
 declare class BaseDrawing
 	Visible: boolean
@@ -183,6 +204,7 @@ declare class BaseDrawing
 	Transparency: number
 	Color: Color3
 	function Destroy(self): ()
+	function Remove(self): ()
 end
 
 declare class DrawingLine extends BaseDrawing
@@ -224,7 +246,7 @@ declare class DrawingSquare extends BaseDrawing
 	Filled: boolean
 end
 
-declare class DrawingQuad extends BaseDrawing -- this is currently broken on celery
+declare class DrawingQuad extends BaseDrawing
 	PointA: Vector2
 	PointB: Vector2
 	PointC: Vector2
@@ -233,7 +255,7 @@ declare class DrawingQuad extends BaseDrawing -- this is currently broken on cel
 	Filled: boolean
 end
 
-declare class DrawingTriangle extends BaseDrawing -- this is also broken
+declare class DrawingTriangle extends BaseDrawing
 	PointA: Vector2
 	PointB: Vector2
 	PointC: Vector2
