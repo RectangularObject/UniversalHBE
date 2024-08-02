@@ -35,41 +35,13 @@ declare debug: typeof(debug) & {
 	--setupvalues: (...any) -> ...any, -- what
 	dumprefs: (...any) -> ...any, -- no documentation
 }
-
-declare function getclipboard(): string
-declare function mousescroll(pixels: number): ()
-declare function makefolder(path: string): ()
-declare function mousemoverel(x: number, y: number): ()
-declare function mousemoveabs(x: number, y: number): ()
-declare function fromclipboard(...:any): ...any
-declare function mouse2release(): ()
-declare function getsenv(script: LocalScript | ModuleScript): { [string]: any }
-declare function setrawmetatable(object: { [any]: any }, metatable: { [any]: any }): ()
-declare function checkcaller(): boolean
-declare function dumpstring(script: LocalScript | ModuleScript): string
-declare function getfenv(...:any): ...any
-declare function lz4compress(data: string): string
-declare function mouse1release(): ()
-declare function rconsolesettitle(title: string): ()
-declare function setreadonly(object: { [any]: any }, readonly: boolean): ()
-declare function consolecreate(): ()
-declare function mouse1press(): ()
-declare function getexecutorname(...:any): ...any
-declare function lz4decompress(data: string, size: number): string
-declare function getrawmetatable(object: { [any]: any }): { [any]: any }
-declare function setrenderproperty(drawing: { [any]: any }, property: string, value: any): ()
-declare function getreg(...:any): ...any
-declare function rconsoleprint(text: string): ()
 declare base64: {
 	encode: (data: string) -> string,
 	decode: (data: string) -> string,
 }
-declare function consoleprint(text: string): ()
-declare function newcclosure<T>(func: T): T
 declare http: {
 	request: (table: HttpRequestOptions) -> HttpResponseData,
 }
-declare function getinstances(): { Instance }
 declare crypt: {
 	base64_decode: (data: string) -> string,
 	hash: (data: string, algorithm: string) -> string,
@@ -96,16 +68,11 @@ declare crypt: {
 	hashes: {
 	},
 }
-declare function getloadedmodules(excludeCore: boolean?): { ModuleScript }
 declare cache: {
 	replace: (object: Instance, newObject: Instance) -> (),
 	iscached: (object: Instance) -> boolean,
 	invalidate: (object: Instance) -> (),
 }
-declare function getrenv(): { [string]: any }
-declare function checkclosure(func: (...any) -> ...any): boolean
-declare function gethui(): Folder
-declare function toclipboard(...:any): ...any
 declare Drawing: {
 	Fonts: {
 		UI: number,
@@ -115,6 +82,104 @@ declare Drawing: {
 	},
 	new: ((type: "Line") -> DrawingLine) & ((type: "Text") -> DrawingText) & ((type: "Image") -> DrawingImage) & ((type: "Circle") -> DrawingCircle) & ((type: "Square") -> DrawingSquare) & ((type: "Quad") -> DrawingQuad) & ((type: "Triangle") -> DrawingTriangle),
 }
+
+declare class BaseDrawing
+	Visible: boolean
+	ZIndex: number
+	Transparency: number
+	Color: Color3
+	function Destroy(self): ()
+	function Remove(self): ()
+end
+
+declare class DrawingLine extends BaseDrawing
+	From: Vector2
+	To: Vector2
+	Thickness: number
+end
+
+declare class DrawingText extends BaseDrawing
+	Text: string
+	TextBounds: Vector2
+	Font: typeof(Drawing.Fonts)
+	Size: number
+	Position: Vector2
+	Center: boolean
+	Outline: boolean
+	OutlineColor: Color3
+end
+
+declare class DrawingImage extends BaseDrawing
+	Data: string
+	Size: Vector2
+	Position: Vector2
+	Rounding: number
+end
+
+declare class DrawingCircle extends BaseDrawing
+	NumSides: number
+	Radius: number
+	Position: Vector2
+	Thickness: number
+	Filled: boolean
+end
+
+declare class DrawingSquare extends BaseDrawing
+	Size: Vector2
+	Position: Vector2
+	Thickness: number
+	Filled: boolean
+end
+
+declare class DrawingQuad extends BaseDrawing
+	PointA: Vector2
+	PointB: Vector2
+	PointC: Vector2
+	PointD: Vector2
+	Thickness: number
+	Filled: boolean
+end
+
+declare class DrawingTriangle extends BaseDrawing
+	PointA: Vector2
+	PointB: Vector2
+	PointC: Vector2
+	Thickness: number
+	Filled: boolean
+end
+
+declare function getclipboard(): string
+declare function mousescroll(pixels: number): ()
+declare function makefolder(path: string): ()
+declare function mousemoverel(x: number, y: number): ()
+declare function mousemoveabs(x: number, y: number): ()
+declare function fromclipboard(...:any): ...any
+declare function mouse2release(): ()
+declare function getsenv(script: LocalScript | ModuleScript): { [string]: any }
+declare function setrawmetatable(object: { [any]: any }, metatable: { [any]: any }): ()
+declare function checkcaller(): boolean
+declare function dumpstring(script: LocalScript | ModuleScript): string
+declare function getfenv(...:any): ...any
+declare function lz4compress(data: string): string
+declare function mouse1release(): ()
+declare function rconsolesettitle(title: string): ()
+declare function setreadonly(object: { [any]: any }, readonly: boolean): ()
+declare function consolecreate(): ()
+declare function mouse1press(): ()
+declare function getexecutorname(...:any): ...any
+declare function lz4decompress(data: string, size: number): string
+declare function getrawmetatable(object: { [any]: any }): { [any]: any }
+declare function setrenderproperty(drawing: { [any]: any }, property: string, value: any): ()
+declare function getreg(...:any): ...any
+declare function rconsoleprint(text: string): ()
+declare function consoleprint(text: string): ()
+declare function newcclosure<T>(func: T): T
+declare function getinstances(): { Instance }
+declare function getloadedmodules(excludeCore: boolean?): { ModuleScript }
+declare function getrenv(): { [string]: any }
+declare function checkclosure(func: (...any) -> ...any): boolean
+declare function gethui(): Folder
+declare function toclipboard(...:any): ...any
 declare function request(table: HttpRequestOptions): HttpResponseData
 declare function getrenderproperty(drawing: { [any]: any }, property: string): any
 declare function readfile(path: string): string
@@ -197,68 +262,3 @@ declare function writefile(path: string, data: string): ()
 declare function base64_encode(data: string): string
 declare function loadfile(path: string, chunkname: string?): (((...any) -> ...any)?, string?)
 declare function getnamecallmethod(): string
-
-declare class BaseDrawing
-	Visible: boolean
-	ZIndex: number
-	Transparency: number
-	Color: Color3
-	function Destroy(self): ()
-	function Remove(self): ()
-end
-
-declare class DrawingLine extends BaseDrawing
-	From: Vector2
-	To: Vector2
-	Thickness: number
-end
-
-declare class DrawingText extends BaseDrawing
-	Text: string
-	TextBounds: Vector2
-	Font: typeof(Drawing.Fonts)
-	Size: number
-	Position: Vector2
-	Center: boolean
-	Outline: boolean
-	OutlineColor: Color3
-end
-
-declare class DrawingImage extends BaseDrawing
-	Data: string
-	Size: Vector2
-	Position: Vector2
-	Rounding: number
-end
-
-declare class DrawingCircle extends BaseDrawing
-	NumSides: number
-	Radius: number
-	Position: Vector2
-	Thickness: number
-	Filled: boolean
-end
-
-declare class DrawingSquare extends BaseDrawing
-	Size: Vector2
-	Position: Vector2
-	Thickness: number
-	Filled: boolean
-end
-
-declare class DrawingQuad extends BaseDrawing
-	PointA: Vector2
-	PointB: Vector2
-	PointC: Vector2
-	PointD: Vector2
-	Thickness: number
-	Filled: boolean
-end
-
-declare class DrawingTriangle extends BaseDrawing
-	PointA: Vector2
-	PointB: Vector2
-	PointC: Vector2
-	Thickness: number
-	Filled: boolean
-end
