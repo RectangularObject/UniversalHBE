@@ -7,8 +7,8 @@ local connections = {}
 
 if not _G.MTAPIMutex then
 	local _mtapi = request({ Url = "https://raw.githubusercontent.com/RectangularObject/MT-Api-v2/main/__source/mt-api%20v2.lua" })
-	assert(_mtapi.StatusCode == 200, "Failed to request mt-api v2.lua")
-	loadstring(_mtapi.Body)
+	assert(_mtapi.StatusCode == 200, "Failed to request mt-api v2.lua");
+	(loadstring(_mtapi.Body) :: (...any) -> ...any)()
 end
 
 type Entity = typeof(require("./Classes/Entity.lua").new(Instance.new("Model"))) & {
