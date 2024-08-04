@@ -61,12 +61,22 @@ local function addEntity(entity: Entity)
 			hideChams()
 			return
 		end
-		if Toggles.nameToggle.Value then
+		-- stylua: ignore start
+		local validTarget = (
+				if Toggles.ignoreTeammates.Value       and self:isTeammate() then false
+			elseif Toggles.ignoreFF.Value              and self:isFFed()     then false
+			elseif Toggles.ignoreSitting.Value         and self:isSitting()  then false
+			elseif Toggles.ignoreSelectedPlayers.Value and table.find(Options.ignorePlayerList:GetActiveValues(), self:GetName())         then false
+			elseif Toggles.ignoreSelectedTeams.Value   and table.find(Options.ignoreTeamList:GetActiveValues(), tostring(self:GetTeam())) then false
+			else true
+		)
+		-- stylua: ignore end
+		if Toggles.nameToggle.Value and validTarget then
 			updateEsp(pos)
 		else
 			hideEsp()
 		end
-		if Toggles.chamsToggle.Value then
+		if Toggles.chamsToggle.Value and validTarget then
 			updateChams()
 		else
 			hideChams()
