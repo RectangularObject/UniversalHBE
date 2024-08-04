@@ -48,17 +48,19 @@ local function addEntity(entity: Entity)
 		chams.Enabled = true
 		chams.Parent = gethui()
 	end
+	local function hideEspAndChams()
+		hideEsp()
+		hideChams()
+	end
 
 	function entity:espStep()
 		if self:isDead() then
-			hideEsp()
-			hideChams()
+			hideEspAndChams()
 			return
 		end
 		local pos, vis = WorldToViewportPoint(Camera, self:GetPosition())
 		if not vis then
-			hideEsp()
-			hideChams()
+			hideEspAndChams()
 			return
 		end
 		-- stylua: ignore start
@@ -111,3 +113,7 @@ function visualHandler:Unload()
 end
 
 return visualHandler
+
+--[[
+TODO: rewrite this to only update properties when needed (like the hitbox handler)
+]]
