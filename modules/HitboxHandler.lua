@@ -9,7 +9,6 @@ if not getgenv().MTAPIMutex then
 	local _mtapi = request({ Url = "https://raw.githubusercontent.com/RectangularObject/MT-Api-v2/main/__source/mt-api%20v2.lua" })
 	assert(_mtapi.StatusCode == 200, "Failed to request mt-api v2.lua");
 	(loadstring(_mtapi.Body) :: (...any) -> ...any)()
-	getgenv().MTAPIMutex = true -- getgenv still broken on celery
 end
 
 type Entity = typeof(require("./Classes/Entity.lua").new(Instance.new("Model"))) & {
