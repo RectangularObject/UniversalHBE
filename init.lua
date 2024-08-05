@@ -52,12 +52,12 @@ for _, v in configList do
 end
 
 UI.Library:OnUnload(function()
-	for _, v in configList do
-		v.Callback = nil
-	end
 	HitboxHandler:Unload()
 	VisualHandler:Unload()
 	EntityHandler:Unload()
+	for _, v in configList do
+		v.Callback = nil
+	end
 	getgenv().FurryHBE = nil
 end)
 
