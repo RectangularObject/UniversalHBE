@@ -7,9 +7,7 @@ local WorldToViewportPoint = Camera.WorldToViewportPoint
 local Toggles = UI.Toggles
 local Options = UI.Options
 local visualHandler = {}
-local connections = {
-	Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() Camera = Workspace.CurrentCamera end),
-}
+local connections = {}
 
 type Entity = typeof(require("./Classes/Entity.lua").new(Instance.new("Model"))) & { nameEsp: DrawingText, chams: Highlight | nil, espStep: (Entity) -> () }
 local function addEntity(entity: Entity)
@@ -96,6 +94,7 @@ function visualHandler:Load()
 	end
 	table.insert(connections, EntHandler.PlayerAdded:Connect(addEntity))
 	table.insert(connections, EntHandler.PlayerRemoving:Connect(removeEntity))
+	table.insert(connections, Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() Camera = Workspace.CurrentCamera end))
 	RunService:BindToRenderStep("furryESP", Enum.RenderPriority.Camera.Value - 1, function()
 		for _, player in EntHandler:GetPlayers() do
 			task.spawn(player.espStep, player)
