@@ -53,9 +53,9 @@ RunService:BindToRenderStep("furryWalls", Enum.RenderPriority.Camera.Value - 1, 
 	end
 end)
 
-local mainWindow = Library:CreateWindow("Squares's Hitbox Expander")
+local mainWindow = Library:CreateWindow("Squares' Hitbox Extender")
 local mainTab = mainWindow:AddTab("Main")
-local mainGroupbox = mainTab:AddLeftGroupbox("Hitbox Expander")
+local mainGroupbox = mainTab:AddLeftGroupbox("Hitbox Extender")
 local espGroupbox = mainTab:AddLeftGroupbox("ESP")
 local ignoresGroupbox = mainTab:AddRightGroupbox("Ignores")
 local collisionsGroupbox = mainTab:AddRightGroupbox("Collisions")
@@ -64,11 +64,11 @@ local miscGroupbox = mainTab:AddLeftGroupbox("Keybinds")
 local emergencyTab = mainWindow:AddTab("Emergency")
 local emergencyGroupbox = emergencyTab:AddLeftGroupbox("Fixes")
 
-mainGroupbox:AddToggle("expanderToggled", { Text = "Toggle" }):OnChanged(updatePlayers)
-mainGroupbox:AddSlider("expanderSize", { Text = "Size", Min = 2, Max = 100, Default = 10, Rounding = 1 }):OnChanged(updatePlayers)
-mainGroupbox:AddSlider("expanderTransparency", { Text = "Transparency", Min = 0, Max = 1, Default = 0.5, Rounding = 2 }):OnChanged(updatePlayers)
+mainGroupbox:AddToggle("extenderToggled", { Text = "Toggle" }):OnChanged(updatePlayers)
+mainGroupbox:AddSlider("extenderSize", { Text = "Size", Min = 2, Max = 100, Default = 10, Rounding = 1 }):OnChanged(updatePlayers)
+mainGroupbox:AddSlider("extenderTransparency", { Text = "Transparency", Min = 0, Max = 1, Default = 0.5, Rounding = 2 }):OnChanged(updatePlayers)
 mainGroupbox:AddInput("customPartName", { Text = "Custom Part Name", Default = "HeadHB" }):OnChanged(updatePlayers)
-mainGroupbox:AddDropdown("expanderPartList", { Text = "Body Parts", AllowNull = true, Multi = true, Values = { "Custom Part", "Head", "HumanoidRootPart", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg" }, Default = "HumanoidRootPart" }):OnChanged(updatePlayers)
+mainGroupbox:AddDropdown("extenderPartList", { Text = "Body Parts", AllowNull = true, Multi = true, Values = { "Custom Part", "Head", "HumanoidRootPart", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg" }, Default = "HumanoidRootPart" }):OnChanged(updatePlayers)
 
 espGroupbox:AddToggle("espNameToggled", { Text = "Name" }):AddColorPicker("espNameColor1", { Title = "Fill Color", Default = Color3.fromRGB(255, 255, 255) }):AddColorPicker("espNameColor2", { Title = "Outline Color", Default = Color3.fromRGB(0, 0, 0) })
 Toggles.espNameToggled:OnChanged(updatePlayers)
@@ -90,8 +90,8 @@ miscGroupbox:AddLabel("Force Update"):AddKeyPicker("forceUpdateKeybind", { Defau
 Options.forceUpdateKeybind:OnClick(updatePlayers)
 Library.ToggleKeybind = Options.menuKeybind
 
-ignoresGroupbox:AddToggle("expanderSitCheck", { Text = "Ignore Sitting Players" }):OnChanged(updatePlayers)
-ignoresGroupbox:AddToggle("expanderFFCheck", { Text = "Ignore Forcefielded Players" }):OnChanged(updatePlayers)
+ignoresGroupbox:AddToggle("extenderSitCheck", { Text = "Ignore Sitting Players" }):OnChanged(updatePlayers)
+ignoresGroupbox:AddToggle("extenderFFCheck", { Text = "Ignore Forcefielded Players" }):OnChanged(updatePlayers)
 ignoresGroupbox:AddToggle("ignoreSelectedPlayersToggled", { Text = "Ignore Selected Players" }):OnChanged(updatePlayers)
 ignoresGroupbox:AddDropdown("ignorePlayerList", { Text = "Players", AllowNull = true, Multi = true, Values = {} }):OnChanged(updatePlayers)
 ignoresGroupbox:AddToggle("ignoreOwnTeamToggled", { Text = "Ignore Own Team" }):OnChanged(updatePlayers)
@@ -219,7 +219,7 @@ local function addPlayer(player)
 
 	local function isSitting()
 		local humanoid = playerChar:FindFirstChildWhichIsA("Humanoid")
-		return Toggles.expanderSitCheck.Value and humanoid ~= nil and humanoid.Sit == true
+		return Toggles.extenderSitCheck.Value and humanoid ~= nil and humanoid.Sit == true
 	end
 
 	local function isFFed()
@@ -228,7 +228,7 @@ local function addPlayer(player)
 			return playerChar.Head.Material == Enum.Material.ForceField
 		end
 		local ff = playerChar:FindFirstChildWhichIsA("ForceField")
-		return Toggles.expanderFFCheck.Value and playerChar ~= nil and ff ~= nil and ff.Visible == true
+		return Toggles.extenderFFCheck.Value and playerChar ~= nil and ff ~= nil and ff.Visible == true
 	end
 
 	local function isIgnored()
@@ -257,8 +257,8 @@ local function addPlayer(player)
 		local setSizeHook = part:AddSetHook("Size", function(_, value)
 			properties.Size = value
 			getSizeHook:Modify("Size", properties.Size)
-			if Toggles.expanderToggled.Value then
-				local size = Options.expanderSize.Value
+			if Toggles.extenderToggled.Value then
+				local size = Options.extenderSize.Value
 				return Vector3.new(size, size, size)
 			end
 			return properties.Size
@@ -266,15 +266,15 @@ local function addPlayer(player)
 		local setTransparencyHook = part:AddSetHook("Transparency", function(_, value)
 			properties.Transparency = value
 			getTransparencyHook:Modify("Transparency", properties.Transparency)
-			if Toggles.expanderToggled.Value then
-				return Options.expanderTransparency.Value
+			if Toggles.extenderToggled.Value then
+				return Options.extenderTransparency.Value
 			end
 			return properties.Transparency
 		end)
 		local setMasslessHook = part:AddSetHook("Massless", function(_, value)
 			properties.Massless = value
 			getMasslessHook:Modify("Massless", properties.Massless)
-			if Toggles.expanderToggled.Value then
+			if Toggles.extenderToggled.Value then
 				if part.Name ~= "HumanoidRootPart" then
 					return true
 				end
@@ -284,7 +284,7 @@ local function addPlayer(player)
 		local setCanCollideHook = part:AddSetHook("CanCollide", function(_, value)
 			properties.CanCollide = value
 			getCanCollideHook:Modify("CanCollide", properties.CanCollide)
-			if Toggles.expanderToggled.Value and not Toggles.collisionsToggled.Value then
+			if Toggles.extenderToggled.Value and not Toggles.collisionsToggled.Value then
 				if part.Name == "Head" or part.Name == "HumanoidRootPart" then
 					return false
 				end
@@ -294,7 +294,7 @@ local function addPlayer(player)
 		--[[ local setCollisionGroupId = part:AddSetHook("CollisionGroupId", function(_, value)
 			properties.CollisionGroupId = value
 			getCollisionGroupHook:Modify("CollisionGroupId", properties.CollisionGroupId)
-			if Toggles.expanderToggled.Value and not Toggles.collisionsToggled.Value then
+			if Toggles.extenderToggled.Value and not Toggles.collisionsToggled.Value then
 				return PhysicsService:GetCollisionGroupId("furryCollisions")
 			end
 			return properties.CollisionGroupId
@@ -325,7 +325,7 @@ local function addPlayer(player)
 
 	local function isActive(part)
 		local name = part.Name
-		for _, v in pairs(Options.expanderPartList:GetActiveValues()) do
+		for _, v in pairs(Options.extenderPartList:GetActiveValues()) do
 			if string.match(name, v) or (v == "Custom Part" and string.match(name, Options.customPartName.Value)) or
 			(v == "Left Arm" and string.match(name, "Left") and (string.match(name, "Arm") or string.match(name, "Hand"))) or
 			(v == "Right Arm" and string.match(name, "Right") and (string.match(name, "Arm") or string.match(name, "Hand"))) or
@@ -341,7 +341,7 @@ local function addPlayer(player)
 		if not defaultProperties[part.Name] then
 			setup(part)
 		end
-		if Toggles.expanderToggled.Value and isActive(part) and not isIgnored() and not isSitting() and not isFFed() and not isDead() then
+		if Toggles.extenderToggled.Value and isActive(part) and not isIgnored() and not isSitting() and not isFFed() and not isDead() then
 			if part.Name ~= "HumanoidRootPart" then
 				part.Massless = true
 			end
@@ -356,13 +356,13 @@ local function addPlayer(player)
 				part.CanCollide = defaultProperties[part.Name].CanCollide
 				--[[ part.CollisionGroupId = defaultProperties[part.Name].CollisionGroupId ]]
 			end
-			local size = Options.expanderSize.Value
+			local size = Options.extenderSize.Value
 			part.Size = Vector3.new(size, size, size)
-			part.Transparency = Options.expanderTransparency.Value
+			part.Transparency = Options.extenderTransparency.Value
 			if part.Name == "Head" then
 				local face = part:FindFirstChild("face")
 				if face then
-					face.Transparency = Options.expanderTransparency.Value
+					face.Transparency = Options.extenderTransparency.Value
 				end
 			end
 		else
