@@ -1,6 +1,6 @@
 {
     "luau-lsp.types.definitionFiles": [
-        "celeryTypes.d.lua",
+        "exploitTypes.d.lua",
         "mtapiTypes.d.lua"
     ],
     "luau-lsp.ignoreGlobs": [
