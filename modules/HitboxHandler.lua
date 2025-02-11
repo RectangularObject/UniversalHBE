@@ -1,8 +1,4 @@
 local EntHandler = require("./EntityHandler.lua")
-local UI = require("./UI.lua")
-local Toggles = UI.Toggles
-local Options = UI.Options
-local hitboxHandler = {}
 local connections = {}
 
 if not getgenv().MTAPIMutex then
@@ -10,6 +6,13 @@ if not getgenv().MTAPIMutex then
 	assert(_mtapi.StatusCode == 200, "Failed to request mt-api v2.lua");
 	(loadstring(_mtapi.Body) :: (...any) -> ...any)()
 end
+
+local hitboxHandler = {
+	hitboxEnabled = false,
+	hitboxSize = Vector3.new(5, 5, 5),
+	hitboxTransparency = 0,
+	hitboxCanCollide = false,
+}
 
 type Entity = typeof(require("./Classes/Entity.lua").new(Instance.new("Model"))) & {
 	oldProperties: { [Instance]: { debounce: boolean?, Size: Vector3?, Transparency: number?, Massless: boolean?, CanCollide: boolean? } },
@@ -40,25 +43,23 @@ local function addEntity(entity: Entity)
 
 		partHooks.setSizeHook = part:AddSetHook("Size", function(_, value)
 			partProperties.Size = value
-			local hitboxSize = Options.hitboxSize.Value
-			return if Toggles.hitboxToggle.Value then Vector3.new(hitboxSize, hitboxSize, hitboxSize) else value
+			return if hitboxHandler.hitboxEnabled then hitboxHandler.hitboxSize else value
 		end)
 		partHooks.setSizeHook = part:AddSetHook("size", function(_, value)
 			partProperties.Size = value
-			local hitboxSize = Options.hitboxSize.Value
-			return if Toggles.hitboxToggle.Value then Vector3.new(hitboxSize, hitboxSize, hitboxSize) else value
+			return if hitboxHandler.hitboxEnabled then hitboxHandler.hitboxSize else value
 		end)
 		partHooks.setTransparencyHook = part:AddSetHook("Transparency", function(_, value)
 			partProperties.Transparency = value
-			return if Toggles.hitboxToggle.Value then Options.hitboxTransparency.Value else value
+			return if hitboxHandler.hitboxEnabled then hitboxHandler.hitboxTransparency else value
 		end)
 		partHooks.setMasslessHook = part:AddSetHook("Massless", function(_, value)
 			partProperties.Massless = value
-			return if Toggles.hitboxToggle.Value then part.Name ~= "HumanoidRootPart" else value
+			return if hitboxHandler.hitboxEnabled then part.Name ~= "HumanoidRootPart" else value
 		end)
 		partHooks.setCanCollideHook = part:AddSetHook("CanCollide", function(_, value)
 			partProperties.CanCollide = value
-			return if Toggles.hitboxToggle.Value then Toggles.collisionsToggle.Value else value
+			return if hitboxHandler.hitboxEnabled then hitboxHandler.hitboxCanCollide else value
 		end)
 
 		part.Changed:Connect(function(property) -- __namecall isn't replicated to the client when called from a serverscript
@@ -83,7 +84,7 @@ local function addEntity(entity: Entity)
 		decalHooks.getTransparencyHook = decal:AddGetHook("Transparency", function() return decalProperties.Transparency end)
 		decalHooks.setTransparencyHook = decal:AddSetHook("Transparency", function(_, value)
 			decalProperties.Transparency = value
-			return if Toggles.hitboxToggle.Value then Options.hitboxTransparency.Value else value
+			return if hitboxHandler.hitboxEnabled then hitboxHandler.hitboxTransparency else value
 		end)
 
 		decal.Changed:Connect(function(property)
@@ -116,7 +117,6 @@ function hitboxHandler:Unload()
 	for _, connection in connections do
 		connection:Disconnect()
 	end
-	Toggles.hitboxToggle:SetValue(false)
 	for _, player: Entity in EntHandler:GetPlayers() do
 		for _, hook in player.hooks do
 			hook:Remove()

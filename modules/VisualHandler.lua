@@ -1,14 +1,33 @@
 local EntHandler = require("./EntityHandler.lua")
-local UI = require("./UI.lua")
 local RunService = cloneref(game:GetService("RunService"))
 local Workspace = cloneref(game:GetService("Workspace"))
 local Camera = Workspace.CurrentCamera
 local WorldToViewportPoint = Camera.WorldToViewportPoint
-local Toggles = UI.Toggles
-local Options = UI.Options
-local visualHandler = {}
 local connections = {}
 
+local visualHandler = {
+	drawName = false,
+	nameType = 1, -- 1 = Account Name, 2 = Display Name
+	nameUseTeamColor = false,
+	nameFillColor = Color3.fromRGB(0, 0, 0),
+	nameOutlineColor = Color3.fromRGB(255, 255, 255),
+
+	drawChams = false,
+	chamsUseTeamColor = false,
+	chamsFillColor = Color3.fromRGB(0, 0, 0),
+	chamsFillTransparency = 0,
+	chamsOutlineColor = Color3.fromRGB(255, 255, 255),
+	chamsOutlineTransparency = 0,
+	chamsDepthMode = Enum.HighlightDepthMode.AlwaysOnTop,
+
+	ignoreTeammates = false,
+	ignoreFF = false,
+	ignoreSitting = false,
+	ignoreSelectedPlayers = false,
+	ignorePlayerList = {},
+	ignoreSelectedTeams = false,
+	ignoreTeamList = {},
+}
 type Entity = typeof(require("./Classes/Entity.lua").new(Instance.new("Model"))) & { nameEsp: DrawingText, chams: Highlight | nil, espStep: (Entity) -> () }
 local function addEntity(entity: Entity)
 	local nameEsp: DrawingText = Drawing.new("Text")
@@ -19,9 +38,9 @@ local function addEntity(entity: Entity)
 
 	local function hideEsp() nameEsp.Visible = false end
 	local function updateEsp(pos)
-		nameEsp.Text = if Options.nameType.Value == "Display Name" then entity:GetDisplayName() else entity:GetName()
-		nameEsp.Color = if Toggles.nameUseTeamColor.Value then entity:GetTeamColor() else Options.nameFillColor.Value
-		nameEsp.OutlineColor = Options.nameOutlineColor.Value
+		nameEsp.Text = if visualHandler.nameType == 2 then entity:GetDisplayName() else entity:GetName()
+		nameEsp.Color = if visualHandler.nameUseTeamColor then entity:GetTeamColor() else visualHandler.nameFillColor
+		nameEsp.OutlineColor = visualHandler.nameOutlineColor
 		nameEsp.Position = Vector2.new(pos.X, pos.Y)
 		nameEsp.Size = math.clamp(1000 / pos.Z, 10, math.huge)
 		nameEsp.Visible = true
@@ -35,22 +54,22 @@ local function addEntity(entity: Entity)
 	local function updateChams()
 		if not entity.chams then entity.chams = Instance.new("Highlight") end
 		local chams = entity.chams
-		local useTeamColor = Toggles.chamsUseTeamColor.Value
+		local useTeamColor = visualHandler.chamsUseTeamColor
 		local teamColor = entity:GetTeamColor()
-		chams.FillColor = if useTeamColor then teamColor else Options.chamsFillColor.Value
-		chams.FillTransparency = Options.chamsFillColor.Transparency
-		chams.OutlineColor = if useTeamColor then teamColor else Options.chamsOutlineColor.Value
-		chams.OutlineTransparency = Options.chamsOutlineColor.Transparency
-		chams.DepthMode = Enum.HighlightDepthMode[Options.chamsDepthMode.Value]
+		chams.FillColor = if useTeamColor then teamColor else visualHandler.chamsFillColor
+		chams.FillTransparency = visualHandler.chamsFillTransparency
+		chams.OutlineColor = if useTeamColor then teamColor else visualHandler.chamsOutlineColor
+		chams.OutlineTransparency = visualHandler.chamsOutlineTransparency
+		chams.DepthMode = visualHandler.chamsDepthMode
 		chams.Adornee = entity:GetCharacter()
 		chams.Enabled = true
 		chams.Parent = gethui()
 	end
+
 	local function hideEspAndChams()
 		hideEsp()
 		hideChams()
 	end
-
 	function entity:espStep()
 		if self:isDead() then
 			hideEspAndChams()
@@ -63,20 +82,20 @@ local function addEntity(entity: Entity)
 		end
 		-- stylua: ignore start
 		local validTarget = (
-				if Toggles.ignoreTeammates.Value       and self:isTeammate() then false
-			elseif Toggles.ignoreFF.Value              and self:isFFed()     then false
-			elseif Toggles.ignoreSitting.Value         and self:isSitting()  then false
-			elseif Toggles.ignoreSelectedPlayers.Value and table.find(Options.ignorePlayerList:GetActiveValues(), self:GetName())         then false
-			elseif Toggles.ignoreSelectedTeams.Value   and table.find(Options.ignoreTeamList:GetActiveValues(), tostring(self:GetTeam())) then false
+				if visualHandler.ignoreTeammates       and self:isTeammate()                                                  then false
+			elseif visualHandler.ignoreFF              and self:isFFed()                                                      then false
+			elseif visualHandler.ignoreSitting         and self:isSitting()                                                   then false
+			elseif visualHandler.ignoreSelectedPlayers and table.find(visualHandler.ignorePlayerList, self:GetName())         then false
+			elseif visualHandler.ignoreSelectedTeams   and table.find(visualHandler.ignoreTeamList, tostring(self:GetTeam())) then false
 			else true
 		)
 		-- stylua: ignore end
-		if Toggles.nameToggle.Value and validTarget then
+		if visualHandler.drawName and validTarget then
 			updateEsp(pos)
 		else
 			hideEsp()
 		end
-		if Toggles.chamsToggle.Value and validTarget then
+		if visualHandler.drawChams and validTarget then
 			updateChams()
 		else
 			hideChams()
