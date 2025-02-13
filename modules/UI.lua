@@ -45,13 +45,9 @@ function UI:Load()
 
 	local espGroup = mainTab:AddLeftGroupbox("ESP")
 	local nameToggle = espGroup:AddToggle("nameToggle", { Text = "Name" })
-	nameToggle:OnChanged(function(value) VisualHandler.drawName = value end)
 	local nameFillColor = nameToggle:AddColorPicker("nameFillColor", { Title = "Fill Color", Default = Color3.fromRGB(255, 255, 255) })
-	nameFillColor:OnChanged(function(value) VisualHandler.nameFillColor = value end)
 	local nameOutlineColor = nameToggle:AddColorPicker("nameOutlineColor", { Title = "Outline Color", Default = Color3.fromRGB(0, 0, 0) })
-	nameOutlineColor:OnChanged(function(value) VisualHandler.nameOutlineColor = value end)
 	local nameUseTeamColor = espGroup:AddToggle("nameUseTeamColor", { Text = "Use Team Color For Name" })
-	nameUseTeamColor:OnChanged(function(value) VisualHandler.nameUseTeamColor = value end)
 	local nameType = espGroup:AddDropdown("nameType", {
 		Text = "Name Type",
 		AllowNull = false,
@@ -59,21 +55,17 @@ function UI:Load()
 		Values = { "Account Name", "Display Name" },
 		Default = "Display Name",
 	})
+
+	nameToggle:OnChanged(function(value) VisualHandler.drawName = value end)
+	nameFillColor:OnChanged(function(value) VisualHandler.nameFillColor = value end)
+	nameOutlineColor:OnChanged(function(value) VisualHandler.nameOutlineColor = value end)
+	nameUseTeamColor:OnChanged(function(value) VisualHandler.nameUseTeamColor = value end)
 	nameType:OnChanged(function(value) VisualHandler.nameType = if value == "Display Name" then 2 else 1 end)
 
 	local chamsToggle = espGroup:AddToggle("chamsToggle", { Text = "Chams" })
 	local chamsFillColor = chamsToggle:AddColorPicker("chamsFillColor", { Title = "Fill Color", Default = Color3.fromRGB(0, 0, 0), Transparency = 0.5 })
-	chamsFillColor:OnChanged(function(value)
-		VisualHandler.chamsFillColor = value
-		VisualHandler.chamsFillTransparency = chamsFillColor.Transparency
-	end)
 	local chamsOutlineColor = chamsToggle:AddColorPicker("chamsOutlineColor", { Title = "Outline Color", Default = Color3.fromRGB(255, 255, 255), Transparency = 0.5 })
-	chamsOutlineColor:OnChanged(function(value)
-		VisualHandler.chamsOutlineColor = value
-		VisualHandler.chamsOutlineTransparency = chamsOutlineColor.Transparency
-	end)
 	local chamsUseTeamColor = espGroup:AddToggle("chamsUseTeamColor", { Text = "Use Team Color For Chams" })
-	chamsUseTeamColor:OnChanged(function(value) VisualHandler.chamsUseTeamColor = value end)
 	local chamsDepthMode = espGroup:AddDropdown("chamsDepthMode", {
 		Text = "Chams Depth Mode",
 		AllowNull = false,
@@ -81,6 +73,16 @@ function UI:Load()
 		Values = { "Occluded", "AlwaysOnTop" },
 		Default = "Occluded",
 	})
+
+	chamsFillColor:OnChanged(function(value)
+		VisualHandler.chamsFillColor = value
+		VisualHandler.chamsFillTransparency = chamsFillColor.Transparency
+	end)
+	chamsOutlineColor:OnChanged(function(value)
+		VisualHandler.chamsOutlineColor = value
+		VisualHandler.chamsOutlineTransparency = chamsOutlineColor.Transparency
+	end)
+	chamsUseTeamColor:OnChanged(function(value) VisualHandler.chamsUseTeamColor = value end)
 	chamsDepthMode:OnChanged(function(value) VisualHandler.chamsDepthMode = Enum.HighlightDepthMode[value] end)
 
 	local miscGroup = mainTab:AddLeftGroupbox("Misc")
@@ -89,18 +91,19 @@ function UI:Load()
 
 	local ignoresGroup = mainTab:AddRightGroupbox("Ignores")
 	local ignoreTeammates = ignoresGroup:AddToggle("ignoreTeammates", { Text = "Ignore Teammates" })
-	ignoreTeammates:OnChanged(function(value) VisualHandler.ignoreTeammates = value end)
 	local ignoreFF = ignoresGroup:AddToggle("ignoreFF", { Text = "Ignore Forcefielded Players" })
-	ignoreFF:OnChanged(function(value) VisualHandler.ignoreFF = value end)
 	local ignoreSitting = ignoresGroup:AddToggle("ignoreSitting", { Text = "Ignore Sitting Players" })
-	ignoreSitting:OnChanged(function(value) VisualHandler.ignoreSitting = value end)
 	local ignoreSelectedPlayers = ignoresGroup:AddToggle("ignoreSelectedPlayers", { Text = "Ignore Selected Players" })
-	ignoreSelectedPlayers:OnChanged(function(value) VisualHandler.ignoreSelectedPlayers = value end)
 	local ignorePlayerList = ignoresGroup:AddDropdown("ignorePlayerList", { Text = "Players", Multi = true, AllowNull = true, Values = {} })
-	ignorePlayerList:OnChanged(function(value) VisualHandler.ignorePlayerList = ignorePlayerList:GetActiveValues() end)
 	local ignoreSelectedTeams = ignoresGroup:AddToggle("ignoreSelectedTeams", { Text = "Ignore Selected Teams" })
-	ignoreSelectedTeams:OnChanged(function(value) VisualHandler.ignoreSelectedTeams = value end)
 	local ignoreTeamList = ignoresGroup:AddDropdown("ignoreTeamList", { Text = "Teams", Multi = true, SpecialType = "Team" })
+
+	ignoreTeammates:OnChanged(function(value) VisualHandler.ignoreTeammates = value end)
+	ignoreFF:OnChanged(function(value) VisualHandler.ignoreFF = value end)
+	ignoreSitting:OnChanged(function(value) VisualHandler.ignoreSitting = value end)
+	ignoreSelectedPlayers:OnChanged(function(value) VisualHandler.ignoreSelectedPlayers = value end)
+	ignorePlayerList:OnChanged(function(value) VisualHandler.ignorePlayerList = ignorePlayerList:GetActiveValues() end)
+	ignoreSelectedTeams:OnChanged(function(value) VisualHandler.ignoreSelectedTeams = value end)
 	ignoreTeamList:OnChanged(function(value) VisualHandler.ignoreTeamList = value end)
 
 	local function updateList() -- Force linoria to update dropdown lists
