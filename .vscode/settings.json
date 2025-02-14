@@ -1,8 +1,4 @@
 {
-    "luau-lsp.types.definitionFiles": [
-        "exploitTypes.d.lua",
-        "mtapiTypes.d.lua"
-    ],
     "luau-lsp.ignoreGlobs": [
         "**/_Index/**",
         "compiled/*",
