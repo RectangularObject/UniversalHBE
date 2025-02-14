@@ -654,7 +654,7 @@ emergencyGroupbox:AddButton("Fix Missing Players", function()
 		Library:Notify("No missing players found")
 	end
 	updatePlayers()
-end):AddTooltip("Attempts to find players that were not detected by the hbe (somehow)")
+end):AddToolTip("Attempts to find players that were not detected by the hbe (somehow)")
 
 if game.PlaceId == 111311599 then
 	-- Critical Strike Anticheat Disabler
