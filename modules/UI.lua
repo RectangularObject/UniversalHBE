@@ -20,19 +20,19 @@ local UI = {
 
 function UI:Load()
 	local mainWindow = LinoriaLib:CreateWindow({
-		Title = "Universal Hitbox Expander",
+		Title = "Universal Hitbox Extender",
 		TabPadding = 6,
 		MenuFadeTime = 0,
 		Size = UDim2.fromOffset(550, 620),
 	})
 	local mainTab = mainWindow:AddTab("Main")
 
-	local hitboxGroup = mainTab:AddLeftGroupbox("Hitbox Expander")
+	local hitboxGroup = mainTab:AddLeftGroupbox("Hitbox Extender")
 	local hitboxToggle = hitboxGroup:AddToggle("hitboxToggle", { Text = "Toggle", Risky = true })
 	hitboxToggle:AddKeyPicker("hitboxToggleBind", { Default = "End", Text = "Hitbox Keybind", SyncToggleState = true })
 	local collisionsToggle = hitboxGroup:AddToggle("collisionsToggle", { Text = "Collisions" })
 
-	hitboxToggle:OnChanged(function(value) HitboxHandler.hitboxEnabled = value end)
+	hitboxToggle:OnChanged(function(value) HitboxHandler.extendHitbox = value end)
 	collisionsToggle:OnChanged(function(value) HitboxHandler.hitboxCanCollide = value end)
 
 	local hitboxSize = hitboxGroup:AddSlider("hitboxSize", { Text = "Size", Min = 2, Max = 100, Default = 5, Rounding = 0 })

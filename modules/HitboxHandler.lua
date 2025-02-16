@@ -8,7 +8,7 @@ if not getgenv().MTAPIMutex then
 end
 
 local hitboxHandler = {
-	hitboxEnabled = false,
+	extendHitbox = false,
 	hitboxSize = Vector3.new(5, 5, 5),
 	hitboxTransparency = 0,
 	hitboxCanCollide = false,
@@ -53,23 +53,23 @@ local function addEntity(entity: Entity)
 
 		partHooks.setSizeHook = part:AddSetHook("Size", function(_, value)
 			partProperties.Size = value
-			return if hitboxHandler.hitboxEnabled then hitboxHandler.hitboxSize else value
+			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxSize else value
 		end)
 		partHooks.setSizeHook = part:AddSetHook("size", function(_, value)
 			partProperties.Size = value
-			return if hitboxHandler.hitboxEnabled then hitboxHandler.hitboxSize else value
+			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxSize else value
 		end)
 		partHooks.setTransparencyHook = part:AddSetHook("Transparency", function(_, value)
 			partProperties.Transparency = value
-			return if hitboxHandler.hitboxEnabled then hitboxHandler.hitboxTransparency else value
+			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxTransparency else value
 		end)
 		partHooks.setMasslessHook = part:AddSetHook("Massless", function(_, value)
 			partProperties.Massless = value
-			return if hitboxHandler.hitboxEnabled then part.Name ~= "HumanoidRootPart" else value
+			return if hitboxHandler.extendHitbox then part.Name ~= "HumanoidRootPart" else value
 		end)
 		partHooks.setCanCollideHook = part:AddSetHook("CanCollide", function(_, value)
 			partProperties.CanCollide = value
-			return if hitboxHandler.hitboxEnabled then hitboxHandler.hitboxCanCollide else value
+			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxCanCollide else value
 		end)
 
 		part.Changed:Connect(function(property) -- __namecall isn't replicated to the client when called from a serverscript
@@ -95,7 +95,7 @@ local function addEntity(entity: Entity)
 		decalHooks.getTransparencyHook = decal:AddGetHook("Transparency", function() return decalProperties.Transparency end)
 		decalHooks.setTransparencyHook = decal:AddSetHook("Transparency", function(_, value)
 			decalProperties.Transparency = value
-			return if hitboxHandler.hitboxEnabled then hitboxHandler.hitboxTransparency else value
+			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxTransparency else value
 		end)
 
 		decal.Changed:Connect(function(property)
@@ -164,7 +164,7 @@ local function addEntity(entity: Entity)
 				if child:IsA("Decal") and not self.oldProperties[child] then spoofDecal(child) end
 			end
 
-			if hitboxHandler.hitboxEnabled and validTarget and hitboxHandler.hitboxPartList[tostring(part)] then
+			if hitboxHandler.extendHitbox and validTarget and hitboxHandler.hitboxPartList[tostring(part)] then
 				extendPart(part)
 			else
 				resetPart(part)
