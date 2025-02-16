@@ -8,10 +8,10 @@ local UI = require("./modules/UI.lua")
 local VisualHandler = require("./modules/VisualHandler.lua")
 local override = require("./modules/Overrides.lua")
 
-EntityHandler:Load()
+UI:Load()
 VisualHandler:Load()
 HitboxHandler:Load()
-UI:Load()
+EntityHandler:Load()
 
 HitboxHandler.updateHitbox()
 

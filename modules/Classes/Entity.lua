@@ -41,8 +41,11 @@ function Entity:GetHumanoid()
 	return if character then character:FindFirstChildWhichIsA("Humanoid") else nil
 end
 function Entity:GetRootPart()
+	local humanoid = self:GetHumanoid()
+	if humanoid then return humanoid.RootPart end
 	local character = self:GetCharacter()
-	return if character then character.PrimaryPart else nil
+	if character then return character.PrimaryPart end
+	return nil
 end
 function Entity:GetTeam() return nil end
 function Entity:GetTeamColor() return Color3.fromRGB(255, 255, 255) end

@@ -32,6 +32,9 @@ function UI:Load()
 	hitboxToggle:AddKeyPicker("hitboxToggleBind", { Default = "End", Text = "Hitbox Keybind", SyncToggleState = true })
 	local collisionsToggle = hitboxGroup:AddToggle("collisionsToggle", { Text = "Collisions" })
 
+	hitboxToggle:OnChanged(function(value) HitboxHandler.hitboxEnabled = value end)
+	collisionsToggle:OnChanged(function(value) HitboxHandler.hitboxCanCollide = value end)
+
 	local hitboxSize = hitboxGroup:AddSlider("hitboxSize", { Text = "Size", Min = 2, Max = 100, Default = 5, Rounding = 0 })
 	local hitboxTransparency = hitboxGroup:AddSlider("hitboxTransparency", { Text = "Transparency", Min = 0, Max = 1, Default = 0.5, Rounding = 2 })
 	local customPartName = hitboxGroup:AddInput("customPartName", { Text = "Custom Part Name", Default = "HeadHB" })
@@ -39,9 +42,17 @@ function UI:Load()
 		Text = "Body Parts",
 		AllowNull = true,
 		Multi = true,
-		Values = { "Custom Part", "Head", "HumanoidRootPart", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg" },
-		Default = "HumanoidRootPart",
+		Values = { "Custom Part", "Head", "RootPart", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg" },
+		Default = "RootPart",
 	})
+
+	hitboxSize:OnChanged(function(value) HitboxHandler.hitboxSize = Vector3.new(value, value, value) end)
+	hitboxTransparency:OnChanged(function(value) HitboxHandler.hitboxTransparency = value end)
+	customPartName:OnChanged(function(value)
+		HitboxHandler.customPartName = value
+		HitboxHandler:updatePartList(hitboxPartList:GetActiveValues())
+	end)
+	hitboxPartList:OnChanged(function(value) HitboxHandler:updatePartList(hitboxPartList:GetActiveValues()) end)
 
 	local espGroup = mainTab:AddLeftGroupbox("ESP")
 	local nameToggle = espGroup:AddToggle("nameToggle", { Text = "Name" })
@@ -98,15 +109,36 @@ function UI:Load()
 	local ignoreSelectedPlayers = ignoresGroup:AddToggle("ignoreSelectedPlayers", { Text = "Ignore Selected Players" })
 	local ignorePlayerList = ignoresGroup:AddDropdown("ignorePlayerList", { Text = "Players", Multi = true, AllowNull = true, Values = {} })
 	local ignoreSelectedTeams = ignoresGroup:AddToggle("ignoreSelectedTeams", { Text = "Ignore Selected Teams" })
-	local ignoreTeamList = ignoresGroup:AddDropdown("ignoreTeamList", { Text = "Teams", Multi = true, SpecialType = "Team" })
+	local ignoreTeamList = ignoresGroup:AddDropdown("ignoreTeamList", { Text = "Teams", Multi = true, SpecialType = "Team", ReturnInstanceInstead = true })
 
-	ignoreTeammates:OnChanged(function(value) VisualHandler.ignoreTeammates = value end)
-	ignoreFF:OnChanged(function(value) VisualHandler.ignoreFF = value end)
-	ignoreSitting:OnChanged(function(value) VisualHandler.ignoreSitting = value end)
-	ignoreSelectedPlayers:OnChanged(function(value) VisualHandler.ignoreSelectedPlayers = value end)
-	ignorePlayerList:OnChanged(function(value) VisualHandler.ignorePlayerList = ignorePlayerList:GetActiveValues() end)
-	ignoreSelectedTeams:OnChanged(function(value) VisualHandler.ignoreSelectedTeams = value end)
-	ignoreTeamList:OnChanged(function(value) VisualHandler.ignoreTeamList = value end)
+	ignoreTeammates:OnChanged(function(value)
+		VisualHandler.ignoreTeammates = value
+		HitboxHandler.ignoreTeammates = value
+	end)
+	ignoreFF:OnChanged(function(value)
+		VisualHandler.ignoreFF = value
+		HitboxHandler.ignoreFF = value
+	end)
+	ignoreSitting:OnChanged(function(value)
+		VisualHandler.ignoreSitting = value
+		HitboxHandler.ignoreSitting = value
+	end)
+	ignoreSelectedPlayers:OnChanged(function(value)
+		VisualHandler.ignoreSelectedPlayers = value
+		HitboxHandler.ignoreSelectedPlayers = value
+	end)
+	ignorePlayerList:OnChanged(function(value)
+		VisualHandler.ignorePlayerList = value
+		HitboxHandler.ignorePlayerList = value
+	end)
+	ignoreSelectedTeams:OnChanged(function(value)
+		VisualHandler.ignoreSelectedTeams = value
+		HitboxHandler.ignoreSelectedTeams = value
+	end)
+	ignoreTeamList:OnChanged(function(value)
+		VisualHandler.ignoreTeamList = value
+		HitboxHandler.ignoreTeamList = value
+	end)
 
 	local function updateList() -- Force linoria to update dropdown lists
 		ignorePlayerList:SetValues()

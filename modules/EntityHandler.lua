@@ -31,7 +31,7 @@ end
 
 function entityHandler:Load()
 	for i, plr in ipairs(Players:GetPlayers()) do
-		if i == 1 then continue end --skip localplayer
+		if plr == Players.LocalPlayer then continue end
 		PlayerAdded(plr)
 	end
 	table.insert(connections, Players.PlayerAdded:Connect(PlayerAdded))
