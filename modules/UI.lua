@@ -45,8 +45,8 @@ function UI:Load()
 
 	local espGroup = mainTab:AddLeftGroupbox("ESP")
 	local nameToggle = espGroup:AddToggle("nameToggle", { Text = "Name" })
-	local nameFillColor = nameToggle:AddColorPicker("nameFillColor", { Title = "Fill Color", Default = Color3.fromRGB(255, 255, 255) })
-	local nameOutlineColor = nameToggle:AddColorPicker("nameOutlineColor", { Title = "Outline Color", Default = Color3.fromRGB(0, 0, 0) })
+	nameToggle:AddColorPicker("nameFillColor", { Title = "Fill Color", Default = Color3.fromRGB(255, 255, 255) })
+	nameToggle:AddColorPicker("nameOutlineColor", { Title = "Outline Color", Default = Color3.fromRGB(0, 0, 0) })
 	local nameUseTeamColor = espGroup:AddToggle("nameUseTeamColor", { Text = "Use Team Color For Name" })
 	local nameType = espGroup:AddDropdown("nameType", {
 		Text = "Name Type",
@@ -56,15 +56,16 @@ function UI:Load()
 		Default = "Display Name",
 	})
 
+	-- Personal note: Colorpickers return their parent obj, not themselves, so you can't do nameFillColor:OnChanged
 	nameToggle:OnChanged(function(value) VisualHandler.drawName = value end)
-	nameFillColor:OnChanged(function(value) VisualHandler.nameFillColor = value end)
-	nameOutlineColor:OnChanged(function(value) VisualHandler.nameOutlineColor = value end)
+	UI.Options["nameFillColor"]:OnChanged(function(value) VisualHandler.nameFillColor = value end)
+	UI.Options["nameOutlineColor"]:OnChanged(function(value) VisualHandler.nameOutlineColor = value end)
 	nameUseTeamColor:OnChanged(function(value) VisualHandler.nameUseTeamColor = value end)
 	nameType:OnChanged(function(value) VisualHandler.nameType = if value == "Display Name" then 2 else 1 end)
 
 	local chamsToggle = espGroup:AddToggle("chamsToggle", { Text = "Chams" })
-	local chamsFillColor = chamsToggle:AddColorPicker("chamsFillColor", { Title = "Fill Color", Default = Color3.fromRGB(0, 0, 0), Transparency = 0.5 })
-	local chamsOutlineColor = chamsToggle:AddColorPicker("chamsOutlineColor", { Title = "Outline Color", Default = Color3.fromRGB(255, 255, 255), Transparency = 0.5 })
+	chamsToggle:AddColorPicker("chamsFillColor", { Title = "Fill Color", Default = Color3.fromRGB(0, 0, 0), Transparency = 0.5 })
+	chamsToggle:AddColorPicker("chamsOutlineColor", { Title = "Outline Color", Default = Color3.fromRGB(255, 255, 255), Transparency = 0.5 })
 	local chamsUseTeamColor = espGroup:AddToggle("chamsUseTeamColor", { Text = "Use Team Color For Chams" })
 	local chamsDepthMode = espGroup:AddDropdown("chamsDepthMode", {
 		Text = "Chams Depth Mode",
@@ -74,13 +75,14 @@ function UI:Load()
 		Default = "Occluded",
 	})
 
-	chamsFillColor:OnChanged(function(value)
-		VisualHandler.chamsFillColor = value
-		VisualHandler.chamsFillTransparency = chamsFillColor.Transparency
+	chamsToggle:OnChanged(function(value) VisualHandler.drawChams = value end)
+	UI.Options["chamsFillColor"]:OnChanged(function(color, transparency)
+		VisualHandler.chamsFillColor = color
+		VisualHandler.chamsFillTransparency = transparency
 	end)
-	chamsOutlineColor:OnChanged(function(value)
-		VisualHandler.chamsOutlineColor = value
-		VisualHandler.chamsOutlineTransparency = chamsOutlineColor.Transparency
+	UI.Options["chamsOutlineColor"]:OnChanged(function(color, transparency)
+		VisualHandler.chamsOutlineColor = color
+		VisualHandler.chamsOutlineTransparency = transparency
 	end)
 	chamsUseTeamColor:OnChanged(function(value) VisualHandler.chamsUseTeamColor = value end)
 	chamsDepthMode:OnChanged(function(value) VisualHandler.chamsDepthMode = Enum.HighlightDepthMode[value] end)
