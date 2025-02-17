@@ -1,7 +1,9 @@
 # Universal Hitbox Extender
 For the people that have trouble aiming.
 
-Development on this is slow as I am focusing on college. Also because there are no good executors available that won't instantly get you flagged for a banwave on injection.
-
 > [!NOTE]
-> No loadstring as this branch doesn't really work right now.
+> This branch is still in development. Do not expect everything to work.
+
+```
+loadstring(game:HttpGet("https://github.com/RectangularObject/UniversalHBE/releases/v3.0.1-beta/download/main.lua", true))()
+```
