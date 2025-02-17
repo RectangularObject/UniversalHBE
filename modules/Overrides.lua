@@ -15,3 +15,5 @@ if override then
 	return true
 end
 return false
+
+-- TODO: figure out how the hell I'm gonna make this work with the new additions to HitboxHandler.lua

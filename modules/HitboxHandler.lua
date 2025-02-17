@@ -13,15 +13,15 @@ local hitboxHandler = {
 	hitboxTransparency = 0,
 	hitboxCanCollide = false,
 	customPartName = "HeadHB",
-	hitboxPartList = {},
+	hitboxPartList = {} :: { [string]: boolean },
 
 	ignoreTeammates = false,
 	ignoreFF = false,
 	ignoreSitting = false,
 	ignoreSelectedPlayers = false,
-	ignorePlayerList = {},
+	ignorePlayerList = {} :: { string },
 	ignoreSelectedTeams = false,
-	ignoreTeamList = {},
+	ignoreTeamList = {} :: { string },
 }
 
 type Entity = typeof(require("./Classes/Entity.lua").new(Instance.new("Model"))) & {
@@ -73,7 +73,7 @@ local function addEntity(entity: Entity)
 			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxCanCollide else value
 		end))
 
-		-- properties don't trigger sethooks when set from a serverscript
+		-- properties don't trigger sethooks when set by a serverscript
 		partDumpster:dump(part.Changed:Connect(function(property)
 			if partProperties.debounce then return end
 			if partProperties[property] then partProperties[property] = part[property] end
@@ -187,13 +187,10 @@ local function addEntity(entity: Entity)
 		end
 	end
 
-	local function addUpdateEvents(character: Model?)
-		--print("addUpdateEvents:", entity:GetName(), character)
-		if not character then
-			--print("character not found")
-			return
-		end
-		-- Roblox still hasn't fixed CharacterAdded firing before all of the limbs are loaded
+	local function addUpdateEvents()
+		local character = entity:WaitForCharacter()
+		--print("addUpdateEvents:", entity:GetName())
+		-- Roblox still hasn't fixed CharacterAdded firing too early
 		-- https://devforum.roblox.com/t/avatar-loading-event-ordering-improvements/269607
 		local humanoid
 		local loaded = false
@@ -201,32 +198,46 @@ local function addEntity(entity: Entity)
 		while not loaded and tick() - startTime <= 2 do
 			task.wait()
 			--print("addUpdateEvents loop")
-			for name, _ in hitboxHandler.hitboxPartList do
-				--print("checking part", name .. ":", character:FindFirstChild(name) ~= nil)
-				if not character:FindFirstChild(name) then return end
-			end
+			-- I sure hope limbs loading before the humanoid is consistent behavior! Seems fine in my 3 minutes of testing.
 			humanoid = character:FindFirstChildWhichIsA("Humanoid")
 			--print("checking humanoid:", humanoid ~= nil)
-			if not humanoid then return end
+			if not humanoid then continue end
 			loaded = true
 		end
 		if humanoid then
+			-- Have to check both Health and StateType since some games disable HumanoidStateType.Dead
+			-- This has a side effect of calling hitboxStep twice on death for most games. Too bad!
 			humanoid:GetPropertyChangedSignal("Health"):Connect(function()
-				if humanoid.Health <= 0 then entity:hitboxStep() end
-				--print(entity:GetName(), "died")
+				if humanoid.Health <= 0 then
+					--print("0Health:", entity:GetName())
+					entity:hitboxStep()
+				end
 			end)
 			humanoid.StateChanged:Connect(function(_, newState)
-				if newState == Enum.HumanoidStateType.Dead then entity:hitboxStep() end
+				if newState == Enum.HumanoidStateType.Dead then
+					--print("HumanoidDead:", entity:GetName())
+					entity:hitboxStep()
+				end
 			end)
 		end
-		character.ChildAdded:Connect(function(child)
-			if child:IsA("ForceField") then entity:hitboxStep() end
-			--print(entity:GetName(), "invulnerable")
-		end)
-		character.ChildRemoved:Connect(function(child)
-			if child:IsA("ForceField") then entity:hitboxStep() end
-			--print(entity:GetName(), "vulnerable")
-		end)
+		entity.dumpsters[character] = Dumpster.new()
+		local characterConnectionsDumpster = entity.dumpsters[character]
+		characterConnectionsDumpster:dump(character.ChildAdded:Connect(function(child)
+			if child:IsA("ForceField") then
+				--print("+forcefield:", entity:GetName())
+				entity:hitboxStep()
+			end
+		end))
+		characterConnectionsDumpster:dump(character.ChildRemoved:Connect(function(child)
+			if child:IsA("ForceField") then
+				--print("-forcefield:", entity:GetName())
+				entity:hitboxStep()
+			end
+		end))
+		characterConnectionsDumpster:dump(character.AncestryChanged:Connect(function(_, parent)
+			if parent ~= nil then return end
+			characterConnectionsDumpster:burn()
+		end))
 		entity:hitboxStep()
 	end
 
@@ -240,7 +251,7 @@ local function addEntity(entity: Entity)
 		playerConnectionDumpster:dump(player:GetPropertyChangedSignal("Team"):Connect(entity.hitboxStep))
 	end
 
-	addUpdateEvents(entity:GetCharacter())
+	addUpdateEvents()
 end
 local function removeEntity(entity: Entity)
 	entity.oldProperties = {}
@@ -249,7 +260,7 @@ local function removeEntity(entity: Entity)
 	end
 end
 
-function hitboxHandler:updatePartList(list: { [string]: boolean })
+function hitboxHandler:updatePartList(list: { string })
 	hitboxHandler.hitboxPartList = {}
 	local partMap: { [string]: { string } } = {
 		["Custom Part"] = { hitboxHandler.customPartName },
@@ -270,7 +281,7 @@ function hitboxHandler:updatePartList(list: { [string]: boolean })
 	end
 end
 function hitboxHandler:updateHitbox()
-	for _, player in EntHandler:GetPlayers() do
+	for _, player: Entity in EntHandler:GetPlayers() do
 		player:hitboxStep()
 	end
 end

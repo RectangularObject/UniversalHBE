@@ -5,6 +5,7 @@ type EntityImpl = {
 	new: (ent: Instance) -> Entity,
 	GetType: (self: Entity) -> string,
 	GetCharacter: (self: Entity) -> Model?,
+	WaitForCharacter: (self: Entity) -> Model,
 	GetName: (self: Entity) -> string,
 	GetDisplayName: (self: Entity) -> string,
 	GetPosition: (self: Entity) -> Vector3?,
@@ -26,6 +27,7 @@ Entity.__index = Entity
 function Entity.new(entity) return setmetatable({ instance = entity }, Entity) end
 function Entity:GetType() return typeof(self.instance) end
 function Entity:GetCharacter() return self.instance end
+function Entity:WaitForCharacter() return self:GetCharacter() end
 function Entity:GetName() return tostring(self:GetCharacter()) end
 function Entity:GetDisplayName() return self:GetName() end
 function Entity:GetPosition()
@@ -52,7 +54,7 @@ function Entity:GetTeamColor() return Color3.fromRGB(255, 255, 255) end
 
 function Entity:isDead()
 	local humanoid = self:GetHumanoid()
-	return if humanoid then humanoid:GetState() == Enum.HumanoidStateType.Dead else true
+	return if humanoid then humanoid:GetState() == Enum.HumanoidStateType.Dead or humanoid.Health <= 0 else true
 end
 function Entity:isFFed()
 	local character = self:GetCharacter()

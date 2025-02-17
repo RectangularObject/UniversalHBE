@@ -17,6 +17,7 @@ end
 function basePlayer:GetName() return self.instance.Name end
 function basePlayer:GetDisplayName() return self.instance.DisplayName end
 function basePlayer:GetCharacter() return self.instance.Character end
+function basePlayer:WaitForCharacter() return self:GetCharacter() or self.instance.CharacterAdded:Wait() end
 function basePlayer:GetTeam() return self.instance.Team end
 function basePlayer:GetTeamColor() return self.instance.TeamColor.Color end
 
