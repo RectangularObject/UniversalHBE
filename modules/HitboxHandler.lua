@@ -1,5 +1,5 @@
+local Dumpster = require("./DumpsterModule.lua")
 local EntHandler = require("./EntityHandler.lua")
-local connections = {}
 
 if not getgenv().MTAPIMutex then
 	local _mtapi = request({ Url = "https://raw.githubusercontent.com/RectangularObject/MT-Api-v2/main/__source/mt-api%20v2.lua" })
@@ -25,13 +25,13 @@ local hitboxHandler = {
 }
 
 type Entity = typeof(require("./Classes/Entity.lua").new(Instance.new("Model"))) & {
-	oldProperties: { [Instance]: { debounce: boolean?, Size: Vector3?, Transparency: number?, Massless: boolean?, CanCollide: boolean? } },
-	hooks: { [string]: mtapiHook },
+	oldProperties: { [Instance]: { debounce: boolean, Size: Vector3?, Transparency: number?, Massless: boolean?, CanCollide: boolean? } },
+	dumpsters: { [Instance]: typeof(Dumpster.new()) },
 	hitboxStep: (Entity) -> (),
 }
 local function addEntity(entity: Entity)
 	entity.oldProperties = {}
-	entity.hooks = {}
+	entity.dumpsters = {}
 
 	local function spoofPart(part: BasePart)
 		if not part:IsA("BasePart") then return end
@@ -42,108 +42,122 @@ local function addEntity(entity: Entity)
 			Massless = part.Massless,
 			CanCollide = part.CanCollide,
 		}
+		entity.dumpsters[part] = Dumpster.new()
 		local partProperties = entity.oldProperties[part]
+		local partDumpster = entity.dumpsters[part]
 
-		local partHooks = entity.hooks
-		partHooks.getSizeHook = part:AddGetHook("Size", function() return partProperties.Size end)
-		partHooks.getsizeHook = part:AddGetHook("size", function() return partProperties.Size end)
-		partHooks.getTransparencyHook = part:AddGetHook("Transparency", function() return partProperties.Transparency end)
-		partHooks.getMasslessHook = part:AddGetHook("Massless", function() return partProperties.Massless end)
-		partHooks.getCanCollideHook = part:AddGetHook("CanCollide", function() return partProperties.CanCollide end)
+		partDumpster:dump(part:AddGetHook("Size", function() return partProperties.Size end))
+		partDumpster:dump(part:AddGetHook("size", function() return partProperties.Size end))
+		partDumpster:dump(part:AddGetHook("Transparency", function() return partProperties.Transparency end))
+		partDumpster:dump(part:AddGetHook("Massless", function() return partProperties.Massless end))
+		partDumpster:dump(part:AddGetHook("CanCollide", function() return partProperties.CanCollide end))
 
-		partHooks.setSizeHook = part:AddSetHook("Size", function(_, value)
+		partDumpster:dump(part:AddSetHook("Size", function(_, value)
 			partProperties.Size = value
 			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxSize else value
-		end)
-		partHooks.setSizeHook = part:AddSetHook("size", function(_, value)
+		end))
+		partDumpster:dump(part:AddSetHook("size", function(_, value)
 			partProperties.Size = value
 			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxSize else value
-		end)
-		partHooks.setTransparencyHook = part:AddSetHook("Transparency", function(_, value)
+		end))
+		partDumpster:dump(part:AddSetHook("Transparency", function(_, value)
 			partProperties.Transparency = value
 			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxTransparency else value
-		end)
-		partHooks.setMasslessHook = part:AddSetHook("Massless", function(_, value)
+		end))
+		partDumpster:dump(part:AddSetHook("Massless", function(_, value)
 			partProperties.Massless = value
 			return if hitboxHandler.extendHitbox then part.Name ~= "HumanoidRootPart" else value
-		end)
-		partHooks.setCanCollideHook = part:AddSetHook("CanCollide", function(_, value)
+		end))
+		partDumpster:dump(part:AddSetHook("CanCollide", function(_, value)
 			partProperties.CanCollide = value
 			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxCanCollide else value
-		end)
+		end))
 
-		part.Changed:Connect(function(property) -- __namecall isn't replicated to the client when called from a serverscript
+		-- properties don't trigger sethooks when set from a serverscript
+		partDumpster:dump(part.Changed:Connect(function(property)
 			if partProperties.debounce then return end
 			if partProperties[property] then partProperties[property] = part[property] end
-		end)
-		part.AncestryChanged:Connect(function(instance, parent)
+		end))
+		partDumpster:dump(part.AncestryChanged:Connect(function(_, parent)
 			if parent ~= nil then return end
-			for _, hook in partHooks do
-				hook:Remove()
-			end
 			partProperties = nil
-		end)
+			partDumpster:burn()
+		end))
+		--print("spoofed:", part)
 	end
 	local function spoofDecal(decal: Decal)
 		if not decal:IsA("Decal") then return end
 		entity.oldProperties[decal] = {
+			debounce = false,
 			Transparency = decal.Transparency,
 		}
+		entity.dumpsters[decal] = Dumpster.new()
 		local decalProperties = entity.oldProperties[decal]
+		local decalDumpster = entity.dumpsters[decal]
 
-		local decalHooks = entity.hooks
-		decalHooks.getTransparencyHook = decal:AddGetHook("Transparency", function() return decalProperties.Transparency end)
-		decalHooks.setTransparencyHook = decal:AddSetHook("Transparency", function(_, value)
+		decalDumpster:dump(decal:AddGetHook("Transparency", function() return decalProperties.Transparency end))
+		decalDumpster:dump(decal:AddSetHook("Transparency", function(_, value)
 			decalProperties.Transparency = value
 			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxTransparency else value
-		end)
+		end))
 
-		decal.Changed:Connect(function(property)
+		decalDumpster:dump(decal.Changed:Connect(function(property)
 			if decalProperties.debounce then return end
 			if decalProperties[property] then decalProperties[property] = decal[property] end
-		end)
-		decal.AncestryChanged:Connect(function(instance, parent)
+		end))
+		decalDumpster:dump(decal.AncestryChanged:Connect(function(_, parent)
 			if parent ~= nil then return end
-			for _, hook in decalHooks do
-				hook:Remove()
-			end
 			decalProperties = nil
-		end)
+			decalDumpster:burn()
+		end))
+		--print("spoofed:", decal)
 	end
 
 	local function extendPart(part: BasePart)
-		entity.oldProperties[part].debounce = true
+		local oldPartProperties = entity.oldProperties[part]
+		--print("extendPart:", part)
+		oldPartProperties.debounce = true
 		if part ~= entity:GetRootPart() then part.Massless = true end
 		part.CanCollide = hitboxHandler.hitboxCanCollide
 		part.Size = hitboxHandler.hitboxSize
 		part.Transparency = hitboxHandler.hitboxTransparency
+		oldPartProperties.debounce = false
 		for _, child in pairs(part:GetChildren()) do
 			if child:IsA("Decal") then
-				entity.oldProperties[child].debounce = true
+				--print("extendDecal:", child)
+				local oldDecalProperties = entity.oldProperties[child]
+				oldDecalProperties.debounce = true
 				child.Transparency = hitboxHandler.hitboxTransparency
-				entity.oldProperties[child].debounce = false
+				oldDecalProperties.debounce = false
 			end
 		end
-		entity.oldProperties[part].debounce = false
 	end
 	local function resetPart(part: BasePart)
-		entity.oldProperties[part].debounce = true
-		if part ~= entity:GetRootPart() then part.Massless = entity.oldProperties[part].Massless :: boolean end
-		part.CanCollide = entity.oldProperties[part].CanCollide :: boolean
-		part.Size = entity.oldProperties[part].Size :: Vector3
-		part.Transparency = entity.oldProperties[part].Transparency :: number
+		--print("resetPart:", part)
+		local oldPartProperties = entity.oldProperties[part]
+		oldPartProperties.debounce = true
+		if part ~= entity:GetRootPart() then part.Massless = oldPartProperties.Massless :: boolean end
+		part.CanCollide = oldPartProperties.CanCollide :: boolean
+		part.Size = oldPartProperties.Size :: Vector3
+		part.Transparency = oldPartProperties.Transparency :: number
+		oldPartProperties.debounce = false
 		for _, child in pairs(part:GetChildren()) do
 			if child:IsA("Decal") then
-				entity.oldProperties[child].debounce = true
-				child.Transparency = entity.oldProperties[child].Transparency :: number
-				entity.oldProperties[child].debounce = false
+				--print("resetDecal:", child)
+				local oldDecalProperties = entity.oldProperties[child]
+				oldDecalProperties.debounce = true
+				child.Transparency = oldDecalProperties.Transparency :: number
+				oldDecalProperties.debounce = false
 			end
 		end
-		entity.oldProperties[part].debounce = false
 	end
 	function entity:hitboxStep()
+		--print("hitboxStep:", self:GetName())
 		local character = self:GetCharacter()
-		if not character then return end
+		if not character then
+			--print("character not found")
+			return
+		end
 
 		-- stylua: ignore start
 		local validTarget = (
@@ -156,9 +170,10 @@ local function addEntity(entity: Entity)
 			else true
 		)
 		-- stylua: ignore end
-
+		--print("validTarget:", validTarget)
 		for _, part: BasePart in pairs(character:GetChildren()) do
 			if not part:IsA("BasePart") then continue end
+
 			if not self.oldProperties[part] then spoofPart(part) end
 			for _, child in pairs(part:GetChildren()) do
 				if child:IsA("Decal") and not self.oldProperties[child] then spoofDecal(child) end
@@ -173,7 +188,11 @@ local function addEntity(entity: Entity)
 	end
 
 	local function addUpdateEvents(character: Model?)
-		if not character then return end
+		--print("addUpdateEvents:", entity:GetName(), character)
+		if not character then
+			--print("character not found")
+			return
+		end
 		-- Roblox still hasn't fixed CharacterAdded firing before all of the limbs are loaded
 		-- https://devforum.roblox.com/t/avatar-loading-event-ordering-improvements/269607
 		local humanoid
@@ -181,16 +200,20 @@ local function addEntity(entity: Entity)
 		local startTime = tick()
 		while not loaded and tick() - startTime <= 2 do
 			task.wait()
+			--print("addUpdateEvents loop")
 			for name, _ in hitboxHandler.hitboxPartList do
+				--print("checking part", name .. ":", character:FindFirstChild(name) ~= nil)
 				if not character:FindFirstChild(name) then return end
 			end
 			humanoid = character:FindFirstChildWhichIsA("Humanoid")
+			--print("checking humanoid:", humanoid ~= nil)
 			if not humanoid then return end
 			loaded = true
 		end
 		if humanoid then
 			humanoid:GetPropertyChangedSignal("Health"):Connect(function()
 				if humanoid.Health <= 0 then entity:hitboxStep() end
+				--print(entity:GetName(), "died")
 			end)
 			humanoid.StateChanged:Connect(function(_, newState)
 				if newState == Enum.HumanoidStateType.Dead then entity:hitboxStep() end
@@ -198,23 +221,32 @@ local function addEntity(entity: Entity)
 		end
 		character.ChildAdded:Connect(function(child)
 			if child:IsA("ForceField") then entity:hitboxStep() end
+			--print(entity:GetName(), "invulnerable")
 		end)
 		character.ChildRemoved:Connect(function(child)
 			if child:IsA("ForceField") then entity:hitboxStep() end
+			--print(entity:GetName(), "vulnerable")
 		end)
+		entity:hitboxStep()
 	end
 
 	if entity:GetType() == "Player" then
 		local player = entity.instance :: Player
+		entity.dumpsters[player] = Dumpster.new()
+		local playerConnectionDumpster = entity.dumpsters[player]
 
-		player.CharacterAdded:Connect(addUpdateEvents)
-		player.CharacterRemoving:Connect(function(character)
-			if entity then entity.oldProperties = {} end
-		end)
-		player:GetPropertyChangedSignal("Team"):Connect(entity.hitboxStep)
+		playerConnectionDumpster:dump(player.CharacterAdded:Connect(addUpdateEvents))
+		playerConnectionDumpster:dump(player.CharacterRemoving:Connect(function() entity.oldProperties = {} end))
+		playerConnectionDumpster:dump(player:GetPropertyChangedSignal("Team"):Connect(entity.hitboxStep))
 	end
 
 	addUpdateEvents(entity:GetCharacter())
+end
+local function removeEntity(entity: Entity)
+	entity.oldProperties = {}
+	for _, dumpster in entity.dumpsters do
+		dumpster:burn()
+	end
 end
 
 function hitboxHandler:updatePartList(list: { [string]: boolean })
@@ -242,20 +274,20 @@ function hitboxHandler:updateHitbox()
 		player:hitboxStep()
 	end
 end
+local eventConnections = {}
 function hitboxHandler:Load()
 	for _, player in EntHandler:GetPlayers() do
 		addEntity(player)
 	end
-	table.insert(connections, EntHandler.PlayerAdded:Connect(addEntity))
+	table.insert(eventConnections, EntHandler.PlayerAdded:Connect(addEntity))
+	table.insert(eventConnections, EntHandler.PlayerRemoving:Connect(removeEntity))
 end
 function hitboxHandler:Unload()
-	for _, connection in connections do
+	for _, connection in eventConnections do
 		connection:Disconnect()
 	end
 	for _, player: Entity in EntHandler:GetPlayers() do
-		for _, hook in player.hooks do
-			hook:Remove()
-		end
+		removeEntity(player)
 	end
 end
 return hitboxHandler
