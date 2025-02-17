@@ -10,6 +10,5 @@
 
 stylua.exe
 darklua.exe
-dlconfig.json
 compile.cmd
 compiled/

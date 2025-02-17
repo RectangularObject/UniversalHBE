@@ -1,0 +1,29 @@
+{
+	"generator": {
+		"name": "readable", // dense for release, readable for pre-release
+		"column_span": 100000000000000
+	},
+	"bundle": {
+		"require_mode": {
+			"name": "path",
+			"sources": {
+				"modules": "./modules"
+			}
+		}
+	},
+	"rules": [
+		"remove_types",
+		"remove_function_call_parens",
+		"compute_expression",
+		"remove_empty_do",
+		"remove_unused_if_branch",
+		"remove_unused_variable",
+		{
+			"rule": "rename_variables",
+			"globals": [
+				"$default",
+				"$roblox"
+			]
+		}
+	]
+}
