@@ -193,16 +193,13 @@ local function addEntity(entity: Entity)
 		-- Roblox still hasn't fixed CharacterAdded firing too early
 		-- https://devforum.roblox.com/t/avatar-loading-event-ordering-improvements/269607
 		local humanoid
-		local loaded = false
 		local startTime = tick()
-		while not loaded and tick() - startTime <= 2 do
+		while not humanoid and tick() - startTime <= 2 do
 			task.wait()
 			--print("addUpdateEvents loop")
 			-- I sure hope limbs loading before the humanoid is consistent behavior! Seems fine in my 3 minutes of testing.
 			humanoid = character:FindFirstChildWhichIsA("Humanoid")
 			--print("checking humanoid:", humanoid ~= nil)
-			if not humanoid then continue end
-			loaded = true
 		end
 		if humanoid then
 			-- Have to check both Health and StateType since some games disable HumanoidStateType.Dead
