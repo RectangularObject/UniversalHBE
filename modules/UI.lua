@@ -99,8 +99,11 @@ function UI:Load()
 	chamsDepthMode:OnChanged(function(value) VisualHandler.chamsDepthMode = Enum.HighlightDepthMode[value] end)
 
 	local miscGroup = mainTab:AddLeftGroupbox("Misc")
+	miscGroup:AddLabel("Force Update"):AddKeyPicker("forceUpdateKeybind", { Default = "PageDown", NoUI = true, Text = "Force Update Keybind" })
 	miscGroup:AddLabel("Toggle UI"):AddKeyPicker("menuKeybind", { Default = "Delete", NoUI = true, Text = "Menu Keybind" })
 	miscGroup:AddButton({ Text = "Unload", DoubleClick = true, Func = LinoriaLib.Unload })
+
+	UI.Options["forceUpdateKeybind"]:OnClick(HitboxHandler.updateHitbox)
 
 	local ignoresGroup = mainTab:AddRightGroupbox("Ignores")
 	local ignoreTeammates = ignoresGroup:AddToggle("ignoreTeammates", { Text = "Ignore Teammates" })
