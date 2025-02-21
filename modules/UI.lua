@@ -28,7 +28,7 @@ function UI:Load()
 	local mainTab = mainWindow:AddTab("Main")
 
 	local hitboxGroup = mainTab:AddLeftGroupbox("Hitbox Extender")
-	local hitboxToggle = hitboxGroup:AddToggle("hitboxToggle", { Text = "Toggle", Risky = true })
+	local hitboxToggle = hitboxGroup:AddToggle("hitboxToggle", { Text = "Toggle" })
 	hitboxToggle:AddKeyPicker("hitboxToggleBind", { Default = "End", Text = "Hitbox Keybind", SyncToggleState = true })
 	local collisionsToggle = hitboxGroup:AddToggle("collisionsToggle", { Text = "Collisions" })
 
