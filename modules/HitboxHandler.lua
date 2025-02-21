@@ -130,7 +130,7 @@ local function addEntity(entity: Entity)
 				local oldMeshProperties = entity.oldProperties[child]
 				oldMeshProperties.debounce = true
 
-				child.TextureId = if extend then "" else oldMeshProperties.TextureId
+				child.TextureId = if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldMeshProperties.TextureId
 				-- FileMesh doesn't care about the size of the part, so we have to change the scale of the mesh too
 				child.Scale = if extend then hitboxHandler.hitboxSize else oldMeshProperties.Scale
 
@@ -141,7 +141,7 @@ local function addEntity(entity: Entity)
 				oldWrapProperties.debounce = true
 
 				-- Can't set the transparency of this, so nuke it too
-				child.CageMeshId = if extend then "" else oldWrapProperties.CageMeshId
+				child.CageMeshId = if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldWrapProperties.CageMeshId
 
 				oldWrapProperties.debounce = false
 			end
