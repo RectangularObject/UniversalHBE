@@ -25,7 +25,9 @@ local hitboxHandler = {
 }
 
 type Entity = typeof(require("./Classes/Entity.lua").new(Instance.new("Model"))) & {
-	oldProperties: { [Instance]: { debounce: boolean, Size: Vector3?, Transparency: number?, Massless: boolean?, CanCollide: boolean? } },
+	oldProperties: {
+		[Instance]: { debounce: boolean, Size: Vector3?, Transparency: number?, Massless: boolean?, CanCollide: boolean?, Scale: Vector3?, TextureID: string?, CageMeshId: string? },
+	},
 	dumpsters: { [Instance]: typeof(Dumpster.new()) },
 	hitboxStep: (Entity) -> (),
 }
@@ -33,124 +35,119 @@ local function addEntity(entity: Entity)
 	entity.oldProperties = {}
 	entity.dumpsters = {}
 
-	local function spoofPart(part: BasePart)
-		if not part:IsA("BasePart") then return end
-		entity.oldProperties[part] = {
+	local function spoofInstance(instance)
+		entity.oldProperties[instance] = {
 			debounce = false,
-			Size = part.Size,
-			Transparency = part.Transparency,
-			Massless = part.Massless,
-			CanCollide = part.CanCollide,
 		}
-		entity.dumpsters[part] = Dumpster.new()
-		local partProperties = entity.oldProperties[part]
-		local partDumpster = entity.dumpsters[part]
+		entity.dumpsters[instance] = Dumpster.new()
+		local oldProperties = entity.oldProperties[instance]
+		local dumpster = entity.dumpsters[instance]
 
-		partDumpster:dump(part:AddGetHook("Size", function() return partProperties.Size end))
-		partDumpster:dump(part:AddGetHook("size", function() return partProperties.Size end))
-		partDumpster:dump(part:AddGetHook("Transparency", function() return partProperties.Transparency end))
-		partDumpster:dump(part:AddGetHook("Massless", function() return partProperties.Massless end))
-		partDumpster:dump(part:AddGetHook("CanCollide", function() return partProperties.CanCollide end))
-
-		partDumpster:dump(part:AddSetHook("Size", function(_, value)
-			partProperties.Size = value
-			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxSize else value
-		end))
-		partDumpster:dump(part:AddSetHook("size", function(_, value)
-			partProperties.Size = value
-			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxSize else value
-		end))
-		partDumpster:dump(part:AddSetHook("Transparency", function(_, value)
-			partProperties.Transparency = value
-			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxTransparency else value
-		end))
-		partDumpster:dump(part:AddSetHook("Massless", function(_, value)
-			partProperties.Massless = value
-			return if hitboxHandler.extendHitbox then part.Name ~= "HumanoidRootPart" else value
-		end))
-		partDumpster:dump(part:AddSetHook("CanCollide", function(_, value)
-			partProperties.CanCollide = value
-			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxCanCollide else value
-		end))
-
-		-- properties don't trigger sethooks when set by a serverscript
-		partDumpster:dump(part.Changed:Connect(function(property)
-			if partProperties.debounce then return end
-			if partProperties[property] then partProperties[property] = part[property] end
-		end))
-		partDumpster:dump(part.AncestryChanged:Connect(function(_, parent)
-			if parent ~= nil then return end
-			partProperties = nil
-			partDumpster:burn()
-		end))
-		--print("spoofed:", part)
-	end
-	local function spoofDecal(decal: Decal)
-		if not decal:IsA("Decal") then return end
-		entity.oldProperties[decal] = {
-			debounce = false,
-			Transparency = decal.Transparency,
+		local propertyMap = {
+			["Size"] = function(_, value)
+				oldProperties.Size = value
+				return if hitboxHandler.extendHitbox then hitboxHandler.hitboxSize else value
+			end,
+			["size"] = function(_, value)
+				oldProperties.Size = value
+				return if hitboxHandler.extendHitbox then hitboxHandler.hitboxSize else value
+			end,
+			["Transparency"] = function(_, value)
+				oldProperties.Transparency = value
+				return if hitboxHandler.extendHitbox then hitboxHandler.hitboxTransparency else value
+			end,
+			["Massless"] = function(_, value)
+				oldProperties.Massless = value
+				return if hitboxHandler.extendHitbox then instance ~= entity:GetRootPart() else value
+			end,
+			["CanCollide"] = function(_, value)
+				oldProperties.CanCollide = value
+				return if hitboxHandler.extendHitbox then hitboxHandler.hitboxCanCollide else value
+			end,
+			["Scale"] = function(_, value)
+				oldProperties.Scale = value
+				return if hitboxHandler.extendHitbox then hitboxHandler.hitboxSize else value
+			end,
+			["TextureID"] = function(_, value) -- MeshPart
+				oldProperties.TextureID = value
+				return if hitboxHandler.extendHitbox then "" else value
+			end,
+			["TextureId"] = function(_, value) -- FileMesh
+				oldProperties.TextureID = value
+				return if hitboxHandler.extendHitbox then "" else value
+			end,
+			["CageMeshId"] = function(_, value) -- BaseWrap
+				oldProperties.CageMeshId = value
+				return if hitboxHandler.extendHitbox then "" else value
+			end,
 		}
-		entity.dumpsters[decal] = Dumpster.new()
-		local decalProperties = entity.oldProperties[decal]
-		local decalDumpster = entity.dumpsters[decal]
+		for property, v in propertyMap do
+			if not pcall(function() return not instance[property] end) then continue end -- ohh noo a single pcall this code is TRASH
+			oldProperties[property] = instance[property]
+			dumpster:dump(instance:AddGetHook(property, function() return oldProperties[property] end))
+			dumpster:dump(instance:AddSetHook(property, v))
+		end
 
-		decalDumpster:dump(decal:AddGetHook("Transparency", function() return decalProperties.Transparency end))
-		decalDumpster:dump(decal:AddSetHook("Transparency", function(_, value)
-			decalProperties.Transparency = value
-			return if hitboxHandler.extendHitbox then hitboxHandler.hitboxTransparency else value
+		-- Serverscripts don't trigger hooks when setting properties
+		dumpster:dump(instance.Changed:Connect(function(property)
+			if oldProperties.debounce then return end -- Prevent our own modifications from affecting oldProperties
+			if oldProperties[property] then oldProperties[property] = instance[property] end
 		end))
-
-		decalDumpster:dump(decal.Changed:Connect(function(property)
-			if decalProperties.debounce then return end
-			if decalProperties[property] then decalProperties[property] = decal[property] end
-		end))
-		decalDumpster:dump(decal.AncestryChanged:Connect(function(_, parent)
+		dumpster:dump(instance.AncestryChanged:Connect(function(_, parent)
 			if parent ~= nil then return end
-			decalProperties = nil
-			decalDumpster:burn()
+			oldProperties = nil
+			dumpster:burn()
 		end))
-		--print("spoofed:", decal)
+		--print("spoofed:", instance)
 	end
 
-	local function extendPart(part: BasePart)
+	local function updatePart(part: BasePart, extend: boolean)
 		local oldPartProperties = entity.oldProperties[part]
-		--print("extendPart:", part)
+		--print("updatePart:", extend, part)
 		oldPartProperties.debounce = true
-		if part ~= entity:GetRootPart() then part.Massless = true end
-		part.CanCollide = hitboxHandler.hitboxCanCollide
-		part.Size = hitboxHandler.hitboxSize
-		part.Transparency = hitboxHandler.hitboxTransparency
+
+		-- Parts that are too big will freeze the character in place if they aren't Massless
+		if part ~= entity:GetRootPart() then part.Massless = extend or oldPartProperties.Massless end
+		part.CanCollide = if extend then hitboxHandler.hitboxCanCollide else oldPartProperties.CanCollide
+		part.Size = if extend then hitboxHandler.hitboxSize else oldPartProperties.Size
+		-- Some textures cause the part to go invisible when transparency > 0, so nuke them all
+		if part:IsA("FileMesh") then part.TextureID = if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldPartProperties.TextureID end
+		part.Transparency = if extend then hitboxHandler.hitboxTransparency else oldPartProperties.Transparency
+
 		oldPartProperties.debounce = false
+
 		for _, child in pairs(part:GetChildren()) do
 			if child:IsA("Decal") then
-				--print("extendDecal:", child)
+				--print("updateDecal:", child)
 				local oldDecalProperties = entity.oldProperties[child]
 				oldDecalProperties.debounce = true
-				child.Transparency = hitboxHandler.hitboxTransparency
+
+				child.Transparency = if extend then hitboxHandler.hitboxTransparency else oldDecalProperties.Transparency
+
 				oldDecalProperties.debounce = false
+			elseif child:IsA("SpecialMesh") and child.MeshType == Enum.MeshType.FileMesh then
+				--print("updateMesh:", child)
+				local oldMeshProperties = entity.oldProperties[child]
+				oldMeshProperties.debounce = true
+
+				child.TextureId = if extend then "" else oldMeshProperties.TextureId
+				-- FileMesh doesn't care about the size of the part, so we have to change the scale of the mesh too
+				child.Scale = if extend then hitboxHandler.hitboxSize else oldMeshProperties.Scale
+
+				oldMeshProperties.debounce = false
+			elseif child:IsA("BaseWrap") then -- dynamic clothing
+				--print("updateWrap:", child)
+				local oldWrapProperties = entity.oldProperties[child]
+				oldWrapProperties.debounce = true
+
+				-- Can't set the transparency of this, so nuke it too
+				child.CageMeshId = if extend then "" else oldWrapProperties.CageMeshId
+
+				oldWrapProperties.debounce = false
 			end
 		end
 	end
-	local function resetPart(part: BasePart)
-		--print("resetPart:", part)
-		local oldPartProperties = entity.oldProperties[part]
-		oldPartProperties.debounce = true
-		if part ~= entity:GetRootPart() then part.Massless = oldPartProperties.Massless :: boolean end
-		part.CanCollide = oldPartProperties.CanCollide :: boolean
-		part.Size = oldPartProperties.Size :: Vector3
-		part.Transparency = oldPartProperties.Transparency :: number
-		oldPartProperties.debounce = false
-		for _, child in pairs(part:GetChildren()) do
-			if child:IsA("Decal") then
-				--print("resetDecal:", child)
-				local oldDecalProperties = entity.oldProperties[child]
-				oldDecalProperties.debounce = true
-				child.Transparency = oldDecalProperties.Transparency :: number
-				oldDecalProperties.debounce = false
-			end
-		end
-	end
+
 	function entity:hitboxStep()
 		--print("hitboxStep:", self:GetName())
 		local character = self:GetCharacter()
@@ -174,16 +171,13 @@ local function addEntity(entity: Entity)
 		for _, part: BasePart in pairs(character:GetChildren()) do
 			if not part:IsA("BasePart") then continue end
 
-			if not self.oldProperties[part] then spoofPart(part) end
+			if not self.oldProperties[part] then spoofInstance(part) end
 			for _, child in pairs(part:GetChildren()) do
-				if child:IsA("Decal") and not self.oldProperties[child] then spoofDecal(child) end
+				if self.oldProperties[child] then continue end
+				if child:IsA("Decal") or (child:IsA("SpecialMesh") and child.MeshType == Enum.MeshType.FileMesh) or child:IsA("WrapTarget") then spoofInstance(child) end
 			end
 
-			if hitboxHandler.extendHitbox and validTarget and hitboxHandler.hitboxPartList[tostring(part)] then
-				extendPart(part)
-			else
-				resetPart(part)
-			end
+			updatePart(part, hitboxHandler.extendHitbox and validTarget and hitboxHandler.hitboxPartList[tostring(part)])
 		end
 	end
 
@@ -192,7 +186,7 @@ local function addEntity(entity: Entity)
 		--print("addUpdateEvents:", entity:GetName())
 		-- Roblox still hasn't fixed CharacterAdded firing too early
 		-- https://devforum.roblox.com/t/avatar-loading-event-ordering-improvements/269607
-		local humanoid
+		local humanoid = character:FindFirstChildWhichIsA("Humanoid")
 		local startTime = tick()
 		while not humanoid and tick() - startTime <= 2 do
 			task.wait()
