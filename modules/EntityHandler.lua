@@ -25,7 +25,7 @@ local function EntityAdded(ent)
 	entityHandler.EntityAdded:Fire(entityList[ent])
 end
 local function EntityRemoving(ent)
-	entityHandler.EntityAdded:Fire(entityList[ent])
+	entityHandler.EntityRemoving:Fire(entityList[ent])
 	entityList[ent] = nil
 end
 
