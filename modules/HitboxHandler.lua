@@ -196,17 +196,9 @@ local function addEntity(entity: Entity)
 			--print("checking humanoid:", humanoid ~= nil)
 		end
 		if humanoid then
-			-- Have to check both Health and StateType since some games disable HumanoidStateType.Dead
-			-- This has a side effect of calling hitboxStep twice on death for most games. Too bad!
 			humanoid:GetPropertyChangedSignal("Health"):Connect(function()
 				if humanoid.Health <= 0 then
 					--print("0Health:", entity:GetName())
-					entity:hitboxStep()
-				end
-			end)
-			humanoid.StateChanged:Connect(function(_, newState)
-				if newState == Enum.HumanoidStateType.Dead then
-					--print("HumanoidDead:", entity:GetName())
 					entity:hitboxStep()
 				end
 			end)
@@ -239,7 +231,6 @@ local function addEntity(entity: Entity)
 
 		playerConnectionDumpster:dump(player.CharacterAdded:Connect(addUpdateEvents))
 		playerConnectionDumpster:dump(player.CharacterRemoving:Connect(function() entity.oldProperties = {} end))
-		playerConnectionDumpster:dump(player:GetPropertyChangedSignal("Team"):Connect(entity.hitboxStep))
 	end
 
 	addUpdateEvents()
@@ -276,13 +267,14 @@ function hitboxHandler:updateHitbox()
 		player:hitboxStep()
 	end
 end
-local eventConnections = {}
+local eventConnections: { RBXScriptConnection | typeof(EntHandler.PlayerAdded:Connect(function() end)) } = {}
 function hitboxHandler:Load()
 	for _, player in EntHandler:GetPlayers() do
 		addEntity(player)
 	end
 	table.insert(eventConnections, EntHandler.PlayerAdded:Connect(addEntity))
 	table.insert(eventConnections, EntHandler.PlayerRemoving:Connect(removeEntity))
+	table.insert(eventConnections, game:GetService("Players").LocalPlayer.Team.Changed:Connect(hitboxHandler.updateHitbox))
 end
 function hitboxHandler:Unload()
 	for _, connection in eventConnections do
