@@ -19,9 +19,9 @@ local hitboxHandler = {
 	ignoreFF = false,
 	ignoreSitting = false,
 	ignoreSelectedPlayers = false,
-	ignorePlayerList = {} :: { string },
+	ignorePlayerList = {} :: { [string]: boolean },
 	ignoreSelectedTeams = false,
-	ignoreTeamList = {} :: { string },
+	ignoreTeamList = {} :: { [Team?]: boolean },
 }
 
 type Entity = typeof(require("./Classes/Entity.lua").new(Instance.new("Model"))) & {
@@ -186,22 +186,40 @@ local function addEntity(entity: Entity)
 		end
 	end
 
-	local function addUpdateEvents()
-		local character = entity:WaitForCharacter()
-		--print("addUpdateEvents:", entity:GetName())
-		-- Roblox still hasn't fixed CharacterAdded firing too early
-		-- https://devforum.roblox.com/t/avatar-loading-event-ordering-improvements/269607
+	local function addUpdateEvents(character: Model)
+		--print("addUpdateEvents:", character)
+		entity.dumpsters[character] = Dumpster.new()
+		local connectionDumpster = entity.dumpsters[character]
+		connectionDumpster:dump(character.ChildAdded:Connect(function(child)
+			if child:IsA("ForceField") then
+				--print("+forcefield:", child)
+				entity:hitboxStep()
+			elseif hitboxHandler.hitboxPartList[tostring(child)] then
+				--print("+validPart:", child)
+				entity:hitboxStep()
+			end
+		end))
+		connectionDumpster:dump(character.ChildRemoved:Connect(function(child)
+			if child:IsA("ForceField") then
+				--print("-forcefield:", child)
+				entity:hitboxStep()
+			end
+		end))
+		connectionDumpster:dump(character.AncestryChanged:Connect(function(_, parent)
+			if parent ~= nil then return end
+			connectionDumpster:burn()
+		end))
+
+		entity:hitboxStep()
+
 		local humanoid = character:FindFirstChildWhichIsA("Humanoid")
 		local startTime = tick()
 		while not humanoid and tick() - startTime <= 2 do
 			task.wait()
 			--print("addUpdateEvents loop")
-			-- I sure hope limbs loading before the humanoid is consistent behavior! Seems fine in my 3 minutes of testing.
 			humanoid = character:FindFirstChildWhichIsA("Humanoid")
 			--print("checking humanoid:", humanoid ~= nil)
 		end
-		entity.dumpsters[character] = Dumpster.new()
-		local connectionDumpster = entity.dumpsters[character]
 		if humanoid then
 			connectionDumpster:dump(humanoid:GetPropertyChangedSignal("Health"):Connect(function()
 				if humanoid.Health <= 0 then
@@ -210,25 +228,10 @@ local function addEntity(entity: Entity)
 				end
 			end))
 		end
-		connectionDumpster:dump(character.ChildAdded:Connect(function(child)
-			if child:IsA("ForceField") then
-				--print("+forcefield:", entity:GetName())
-				entity:hitboxStep()
-			end
-		end))
-		connectionDumpster:dump(character.ChildRemoved:Connect(function(child)
-			if child:IsA("ForceField") then
-				--print("-forcefield:", entity:GetName())
-				entity:hitboxStep()
-			end
-		end))
-		connectionDumpster:dump(character.AncestryChanged:Connect(function(_, parent)
-			if parent ~= nil then return end
-			connectionDumpster:burn()
-		end))
-		entity:hitboxStep()
 	end
 
+	local character = entity:GetCharacter()
+	if character then addUpdateEvents(character) end
 	if entity:GetType() == "Player" then
 		local player = entity.instance :: Player
 		entity.dumpsters[player] = Dumpster.new()
@@ -237,8 +240,6 @@ local function addEntity(entity: Entity)
 		playerConnectionDumpster:dump(player.CharacterAdded:Connect(addUpdateEvents))
 		playerConnectionDumpster:dump(player.CharacterRemoving:Connect(function() entity.oldProperties = {} end))
 	end
-
-	addUpdateEvents()
 end
 local function removeEntity(entity: Entity)
 	entity.oldProperties = {}
