@@ -25,7 +25,7 @@ local Entity: EntityImpl = {} :: EntityImpl
 Entity.__index = Entity
 
 function Entity.new(entity) return setmetatable({ instance = entity }, Entity) end
-function Entity:GetType() return typeof(self.instance) end
+function Entity:GetType() return self.instance.ClassName end
 function Entity:GetCharacter() return self.instance end
 function Entity:WaitForCharacter() return self:GetCharacter() end
 function Entity:GetName() return tostring(self:GetCharacter()) end
