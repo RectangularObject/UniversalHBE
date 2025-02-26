@@ -174,7 +174,7 @@ local function addEntity(entity: Entity)
 			if not self.oldProperties[part] then spoofInstance(part) end
 			for _, child in pairs(part:GetChildren()) do
 				if self.oldProperties[child] then continue end
-				if child:IsA("Decal") or (child:IsA("SpecialMesh") and child.MeshType == Enum.MeshType.FileMesh) or child:IsA("WrapTarget") then spoofInstance(child) end
+				if child:IsA("Decal") or (child:IsA("SpecialMesh") and child.MeshType == Enum.MeshType.FileMesh) or child:IsA("BaseWrap") then spoofInstance(child) end
 			end
 
 			updatePart(part, hitboxHandler.extendHitbox and validTarget and hitboxHandler.hitboxPartList[tostring(part)])
