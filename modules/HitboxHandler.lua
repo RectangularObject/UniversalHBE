@@ -195,16 +195,16 @@ local function addEntity(entity: Entity)
 			humanoid = character:FindFirstChildWhichIsA("Humanoid")
 			--print("checking humanoid:", humanoid ~= nil)
 		end
+		entity.dumpsters[character] = Dumpster.new()
+		local characterConnectionsDumpster = entity.dumpsters[character]
 		if humanoid then
-			humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+			characterConnectionsDumpster:dump(humanoid:GetPropertyChangedSignal("Health"):Connect(function()
 				if humanoid.Health <= 0 then
 					--print("0Health:", entity:GetName())
 					entity:hitboxStep()
 				end
-			end)
+			end))
 		end
-		entity.dumpsters[character] = Dumpster.new()
-		local characterConnectionsDumpster = entity.dumpsters[character]
 		characterConnectionsDumpster:dump(character.ChildAdded:Connect(function(child)
 			if child:IsA("ForceField") then
 				--print("+forcefield:", entity:GetName())
