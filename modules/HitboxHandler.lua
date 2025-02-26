@@ -35,6 +35,21 @@ local function addEntity(entity: Entity)
 	entity.oldProperties = {}
 	entity.dumpsters = {}
 
+	local function isValidPart(part) return hitboxHandler.extendHitbox and hitboxHandler.hitboxPartList[tostring(part)] end
+	local function isValidTarget()
+		-- stylua: ignore start
+		return (
+				if entity:isDead()                                                                          then false
+			elseif hitboxHandler.ignoreTeammates       and entity:isTeammate()                              then false
+			elseif hitboxHandler.ignoreFF              and entity:isFFed()                                  then false
+			elseif hitboxHandler.ignoreSitting         and entity:isSitting()                               then false
+			elseif hitboxHandler.ignoreSelectedPlayers and hitboxHandler.ignorePlayerList[entity:GetName()] then false
+			elseif hitboxHandler.ignoreSelectedTeams   and hitboxHandler.ignoreTeamList[entity:GetTeam()]   then false
+			else true
+		)
+		-- stylua: ignore end
+	end
+
 	local function spoofInstance(instance)
 		entity.oldProperties[instance] = {
 			debounce = false,
@@ -46,39 +61,39 @@ local function addEntity(entity: Entity)
 		local propertyMap = {
 			["Size"] = function(_, value)
 				oldProperties.Size = value
-				return if hitboxHandler.extendHitbox then hitboxHandler.hitboxSize else value
+				return if isValidPart(instance) and isValidTarget() then hitboxHandler.hitboxSize else value
 			end,
 			["size"] = function(_, value)
 				oldProperties.Size = value
-				return if hitboxHandler.extendHitbox then hitboxHandler.hitboxSize else value
+				return if isValidPart(instance) and isValidTarget() then hitboxHandler.hitboxSize else value
 			end,
 			["Transparency"] = function(_, value)
 				oldProperties.Transparency = value
-				return if hitboxHandler.extendHitbox then hitboxHandler.hitboxTransparency else value
+				return if isValidPart(instance) and isValidTarget() then hitboxHandler.hitboxTransparency else value
 			end,
 			["Massless"] = function(_, value)
 				oldProperties.Massless = value
-				return if hitboxHandler.extendHitbox then instance ~= entity:GetRootPart() else value
+				return if isValidPart(instance) and isValidTarget() then instance ~= entity:GetRootPart() else value
 			end,
 			["CanCollide"] = function(_, value)
 				oldProperties.CanCollide = value
-				return if hitboxHandler.extendHitbox then hitboxHandler.hitboxCanCollide else value
+				return if isValidPart(instance) and isValidTarget() then hitboxHandler.hitboxCanCollide else value
 			end,
 			["Scale"] = function(_, value)
 				oldProperties.Scale = value
-				return if hitboxHandler.extendHitbox then hitboxHandler.hitboxSize else value
+				return if isValidPart(instance) and isValidTarget() then hitboxHandler.hitboxSize else value
 			end,
 			["TextureID"] = function(_, value) -- MeshPart
 				oldProperties.TextureID = value
-				return if hitboxHandler.extendHitbox then "" else value
+				return if isValidPart(instance) and isValidTarget() then "" else value
 			end,
 			["TextureId"] = function(_, value) -- FileMesh
 				oldProperties.TextureID = value
-				return if hitboxHandler.extendHitbox then "" else value
+				return if isValidPart(instance) and isValidTarget() then "" else value
 			end,
 			["CageMeshId"] = function(_, value) -- BaseWrap
 				oldProperties.CageMeshId = value
-				return if hitboxHandler.extendHitbox then "" else value
+				return if isValidPart(instance) and isValidTarget() then "" else value
 			end,
 		}
 		for property, v in propertyMap do
@@ -156,17 +171,7 @@ local function addEntity(entity: Entity)
 			return
 		end
 
-		-- stylua: ignore start
-		local validTarget = (
-				if self:isDead()                                                                          then false
-			elseif hitboxHandler.ignoreTeammates       and self:isTeammate()                              then false
-			elseif hitboxHandler.ignoreFF              and self:isFFed()                                  then false
-			elseif hitboxHandler.ignoreSitting         and self:isSitting()                               then false
-			elseif hitboxHandler.ignoreSelectedPlayers and hitboxHandler.ignorePlayerList[self:GetName()] then false
-			elseif hitboxHandler.ignoreSelectedTeams   and hitboxHandler.ignoreTeamList[self:GetTeam()]   then false
-			else true
-		)
-		-- stylua: ignore end
+		local validTarget = isValidTarget()
 		--print("validTarget:", validTarget)
 		for _, part: BasePart in pairs(character:GetChildren()) do
 			if not part:IsA("BasePart") then continue end
@@ -177,7 +182,7 @@ local function addEntity(entity: Entity)
 				if child:IsA("Decal") or (child:IsA("SpecialMesh") and child.MeshType == Enum.MeshType.FileMesh) or child:IsA("BaseWrap") then spoofInstance(child) end
 			end
 
-			updatePart(part, hitboxHandler.extendHitbox and validTarget and hitboxHandler.hitboxPartList[tostring(part)])
+			updatePart(part, isValidPart(part) and validTarget)
 		end
 	end
 
