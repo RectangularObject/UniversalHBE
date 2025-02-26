@@ -274,7 +274,7 @@ function hitboxHandler:Load()
 	end
 	table.insert(eventConnections, EntHandler.PlayerAdded:Connect(addEntity))
 	table.insert(eventConnections, EntHandler.PlayerRemoving:Connect(removeEntity))
-	table.insert(eventConnections, game:GetService("Players").LocalPlayer.Team.Changed:Connect(hitboxHandler.updateHitbox))
+	table.insert(eventConnections, game:GetService("Players").LocalPlayer:GetPropertyChangedSignal("Team"):Connect(hitboxHandler.updateHitbox))
 end
 function hitboxHandler:Unload()
 	for _, connection in eventConnections do
