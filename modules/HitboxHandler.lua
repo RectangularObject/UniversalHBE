@@ -152,13 +152,11 @@ local function addEntity(entity: Entity)
 		-- Serverscripts don't trigger hooks when setting properties
 		dumpster:dump(instance.Changed:Connect(function(property)
 			if oldProperties.debounce then return end -- Prevent our own modifications from affecting oldProperties
-			if oldProperties[property] then
+			if oldProperties[property] and oldProperties[property] ~= instance[property] then
 				oldProperties[property] = instance[property]
-				for _, child in pairs(instance:GetChildren()) do
-					if oldProperties[child] then continue end
-					if child:IsA("Decal") or (child:IsA("SpecialMesh") and child.MeshType == Enum.MeshType.FileMesh) or child:IsA("BaseWrap") then spoofInstance(child) end
-				end
-				updatePart(instance, isValidPart(instance) and isValidTarget())
+				oldProperties.debounce = true
+				instance[property] = propertyMap[property](nil, instance[property])
+				oldProperties.debounce = false
 			end
 		end))
 		dumpster:dump(instance.AncestryChanged:Connect(function(_, parent)
