@@ -243,7 +243,7 @@ local function addEntity(entity: Entity)
 
 		playerConnectionDumpster:dump(player.CharacterAdded:Connect(addUpdateEvents))
 		playerConnectionDumpster:dump(player.CharacterRemoving:Connect(function() entity.oldProperties = {} end))
-		playerConnectionDumpster:dump(player:GetPropertyChangedSignal("Team"):Connect(entity.hitboxStep))
+		playerConnectionDumpster:dump(player:GetPropertyChangedSignal("Team"):Connect(function() entity:hitboxStep() end))
 	end
 end
 local function removeEntity(entity: Entity)
