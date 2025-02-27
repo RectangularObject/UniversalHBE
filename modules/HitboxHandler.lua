@@ -227,6 +227,10 @@ local function addEntity(entity: Entity)
 					entity:hitboxStep()
 				end
 			end))
+			connectionDumpster:dump(humanoid.Seated:Connect(function(active)
+				print("Seated", active, entity:GetName())
+				entity:hitboxStep()
+			end))
 		end
 	end
 
