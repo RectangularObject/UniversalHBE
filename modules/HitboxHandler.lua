@@ -21,7 +21,7 @@ local hitboxHandler = {
 	ignoreSelectedPlayers = false,
 	ignorePlayerList = {} :: { [string]: boolean },
 	ignoreSelectedTeams = false,
-	ignoreTeamList = {} :: { [Team?]: boolean },
+	ignoreTeamList = {} :: { [string]: boolean },
 }
 
 type Entity = typeof(require("./Classes/Entity.lua").new(Instance.new("Model"))) & {
@@ -39,12 +39,12 @@ local function addEntity(entity: Entity)
 	local function isValidTarget()
 		-- stylua: ignore start
 		return (
-				if entity:isDead()                                                                          then false
-			elseif hitboxHandler.ignoreTeammates       and entity:isTeammate()                              then false
-			elseif hitboxHandler.ignoreFF              and entity:isFFed()                                  then false
-			elseif hitboxHandler.ignoreSitting         and entity:isSitting()                               then false
-			elseif hitboxHandler.ignoreSelectedPlayers and hitboxHandler.ignorePlayerList[entity:GetName()] then false
-			elseif hitboxHandler.ignoreSelectedTeams   and hitboxHandler.ignoreTeamList[entity:GetTeam()]   then false
+				if entity:isDead()                                                                                  then false
+			elseif hitboxHandler.ignoreTeammates       and entity:isTeammate()                                      then false
+			elseif hitboxHandler.ignoreFF              and entity:isFFed()                                          then false
+			elseif hitboxHandler.ignoreSitting         and entity:isSitting()                                       then false
+			elseif hitboxHandler.ignoreSelectedPlayers and hitboxHandler.ignorePlayerList[entity:GetName()]         then false
+			elseif hitboxHandler.ignoreSelectedTeams   and hitboxHandler.ignoreTeamList[tostring(entity:GetTeam())] then false
 			else true
 		)
 		-- stylua: ignore end

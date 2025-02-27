@@ -82,11 +82,11 @@ local function addEntity(entity: Entity)
 		end
 		-- stylua: ignore start
 		local validTarget = (
-				if visualHandler.ignoreTeammates       and self:isTeammate()                              then false
-			elseif visualHandler.ignoreFF              and self:isFFed()                                  then false
-			elseif visualHandler.ignoreSitting         and self:isSitting()                               then false
-			elseif visualHandler.ignoreSelectedPlayers and visualHandler.ignorePlayerList[self:GetName()] then false
-			elseif visualHandler.ignoreSelectedTeams   and visualHandler.ignoreTeamList[self:GetTeam()]   then false
+				if visualHandler.ignoreTeammates       and self:isTeammate()                                      then false
+			elseif visualHandler.ignoreFF              and self:isFFed()                                          then false
+			elseif visualHandler.ignoreSitting         and self:isSitting()                                       then false
+			elseif visualHandler.ignoreSelectedPlayers and visualHandler.ignorePlayerList[self:GetName()]         then false
+			elseif visualHandler.ignoreSelectedTeams   and visualHandler.ignoreTeamList[tostring(self:GetTeam())] then false
 			else true
 		)
 		-- stylua: ignore end

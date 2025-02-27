@@ -110,9 +110,14 @@ function UI:Load()
 	local ignoreFF = ignoresGroup:AddToggle("ignoreFF", { Text = "Ignore Forcefielded Players" })
 	local ignoreSitting = ignoresGroup:AddToggle("ignoreSitting", { Text = "Ignore Sitting Players" })
 	local ignoreSelectedPlayers = ignoresGroup:AddToggle("ignoreSelectedPlayers", { Text = "Ignore Selected Players" })
-	local ignorePlayerList = ignoresGroup:AddDropdown("ignorePlayerList", { Text = "Players", Multi = true, AllowNull = true, Values = {} })
+	local ignorePlayerList = ignoresGroup:AddDropdown("ignorePlayerList", {
+		Text = "Players",
+		Multi = true,
+		SpecialType = "Player",
+		ExcludeLocalPlayer = true,
+	})
 	local ignoreSelectedTeams = ignoresGroup:AddToggle("ignoreSelectedTeams", { Text = "Ignore Selected Teams" })
-	local ignoreTeamList = ignoresGroup:AddDropdown("ignoreTeamList", { Text = "Teams", Multi = true, SpecialType = "Team", ReturnInstanceInstead = true })
+	local ignoreTeamList = ignoresGroup:AddDropdown("ignoreTeamList", { Text = "Teams", Multi = true, SpecialType = "Team" })
 
 	ignoreTeammates:OnChanged(function(value)
 		VisualHandler.ignoreTeammates = value
@@ -141,23 +146,6 @@ function UI:Load()
 	ignoreTeamList:OnChanged(function(value)
 		VisualHandler.ignoreTeamList = value
 		HitboxHandler.ignoreTeamList = value
-	end)
-
-	local function updateList() -- Force linoria to update dropdown lists
-		ignorePlayerList:SetValues()
-		ignorePlayerList:Display()
-	end
-	for _, player in EntityHandler:GetPlayers() do
-		table.insert(ignorePlayerList.Values, player:GetName())
-	end
-	updateList()
-	EntityHandler.PlayerAdded:Connect(function(player)
-		table.insert(ignorePlayerList.Values, player:GetName())
-		updateList()
-	end)
-	EntityHandler.PlayerRemoving:Connect(function(player)
-		table.remove(ignorePlayerList.Values, table.find(ignorePlayerList.Values, player:GetName()))
-		updateList()
 	end)
 
 	for _, v in
