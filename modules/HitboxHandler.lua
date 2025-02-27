@@ -50,52 +50,6 @@ local function addEntity(entity: Entity)
 		-- stylua: ignore end
 	end
 
-	local function updatePart(part: BasePart, extend: boolean)
-		local oldPartProperties = entity.oldProperties[part]
-		--print("updatePart:", extend, part)
-		oldPartProperties.debounce = true
-
-		-- Parts that are too big will freeze the character in place if they aren't Massless
-		if part ~= entity:GetRootPart() then part.Massless = extend or oldPartProperties.Massless end
-		part.CanCollide = if extend then hitboxHandler.hitboxCanCollide else oldPartProperties.CanCollide
-		part.Size = if extend then hitboxHandler.hitboxSize else oldPartProperties.Size
-		-- Some textures cause the part to go invisible when transparency > 0, so nuke them all
-		if part:IsA("FileMesh") then part.TextureID = if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldPartProperties.TextureID end
-		part.Transparency = if extend then hitboxHandler.hitboxTransparency else oldPartProperties.Transparency
-
-		oldPartProperties.debounce = false
-
-		for _, child in pairs(part:GetChildren()) do
-			if child:IsA("Decal") then
-				--print("updateDecal:", child)
-				local oldDecalProperties = entity.oldProperties[child]
-				oldDecalProperties.debounce = true
-
-				child.Transparency = if extend then hitboxHandler.hitboxTransparency else oldDecalProperties.Transparency
-
-				oldDecalProperties.debounce = false
-			elseif child:IsA("SpecialMesh") and child.MeshType == Enum.MeshType.FileMesh then
-				--print("updateMesh:", child)
-				local oldMeshProperties = entity.oldProperties[child]
-				oldMeshProperties.debounce = true
-
-				child.TextureId = if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldMeshProperties.TextureId
-				-- FileMesh doesn't care about the size of the part, so we have to change the scale of the mesh too
-				child.Scale = if extend then hitboxHandler.hitboxSize else oldMeshProperties.Scale
-
-				oldMeshProperties.debounce = false
-			elseif child:IsA("BaseWrap") then -- dynamic clothing
-				--print("updateWrap:", child)
-				local oldWrapProperties = entity.oldProperties[child]
-				oldWrapProperties.debounce = true
-
-				-- Can't set the transparency of this, so nuke it too
-				child.CageMeshId = if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldWrapProperties.CageMeshId
-
-				oldWrapProperties.debounce = false
-			end
-		end
-	end
 	local function spoofInstance(instance)
 		entity.oldProperties[instance] = {
 			debounce = false,
@@ -165,6 +119,52 @@ local function addEntity(entity: Entity)
 			dumpster:burn()
 		end))
 		--print("spoofed:", instance)
+	end
+	local function updatePart(part: BasePart, extend: boolean)
+		local oldPartProperties = entity.oldProperties[part]
+		--print("updatePart:", extend, part)
+		oldPartProperties.debounce = true
+
+		-- Parts that are too big will freeze the character in place if they aren't Massless
+		if part ~= entity:GetRootPart() then part.Massless = extend or oldPartProperties.Massless end
+		part.CanCollide = if extend then hitboxHandler.hitboxCanCollide else oldPartProperties.CanCollide
+		part.Size = if extend then hitboxHandler.hitboxSize else oldPartProperties.Size
+		-- Some textures cause the part to go invisible when transparency > 0, so nuke them all
+		if part:IsA("FileMesh") then part.TextureID = if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldPartProperties.TextureID end
+		part.Transparency = if extend then hitboxHandler.hitboxTransparency else oldPartProperties.Transparency
+
+		oldPartProperties.debounce = false
+
+		for _, child in pairs(part:GetChildren()) do
+			if child:IsA("Decal") then
+				--print("updateDecal:", child)
+				local oldDecalProperties = entity.oldProperties[child]
+				oldDecalProperties.debounce = true
+
+				child.Transparency = if extend then hitboxHandler.hitboxTransparency else oldDecalProperties.Transparency
+
+				oldDecalProperties.debounce = false
+			elseif child:IsA("SpecialMesh") and child.MeshType == Enum.MeshType.FileMesh then
+				--print("updateMesh:", child)
+				local oldMeshProperties = entity.oldProperties[child]
+				oldMeshProperties.debounce = true
+
+				child.TextureId = if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldMeshProperties.TextureId
+				-- FileMesh doesn't care about the size of the part, so we have to change the scale of the mesh too
+				child.Scale = if extend then hitboxHandler.hitboxSize else oldMeshProperties.Scale
+
+				oldMeshProperties.debounce = false
+			elseif child:IsA("BaseWrap") then -- dynamic clothing
+				--print("updateWrap:", child)
+				local oldWrapProperties = entity.oldProperties[child]
+				oldWrapProperties.debounce = true
+
+				-- Can't set the transparency of this, so nuke it too
+				child.CageMeshId = if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldWrapProperties.CageMeshId
+
+				oldWrapProperties.debounce = false
+			end
+		end
 	end
 
 	function entity:hitboxStep()
