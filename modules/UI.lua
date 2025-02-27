@@ -176,6 +176,10 @@ function UI:Load()
 		getgenv().FurryHBE = nil
 	end)
 
+	game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(teleportState)
+		if teleportState == Enum.TeleportState.InProgress then LinoriaLib.Unload() end
+	end)
+
 	LinoriaLib.ToggleKeybind = UI.Options.menuKeybind
 	SaveManager:BuildConfigSection(mainTab)
 	SaveManager:LoadAutoloadConfig()
