@@ -18,6 +18,7 @@ local function PlayerAdded(plr)
 end
 local function PlayerRemoving(plr)
 	entityHandler.PlayerRemoving:Fire(playerList[plr])
+	task.wait()
 	playerList[plr] = nil
 end
 local function EntityAdded(ent)
@@ -26,6 +27,7 @@ local function EntityAdded(ent)
 end
 local function EntityRemoving(ent)
 	entityHandler.EntityRemoving:Fire(entityList[ent])
+	task.wait()
 	entityList[ent] = nil
 end
 
