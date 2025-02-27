@@ -5,5 +5,5 @@ For the people that have trouble aiming.
 > This branch is still in development. Do not expect everything to work.
 
 ```
-loadstring(game:HttpGet("https://github.com/RectangularObject/UniversalHBE/releases/v3.0.1-beta/download/main.lua", true))()
+loadstring(game:HttpGet("https://github.com/RectangularObject/UniversalHBE/releases/download/v3.1.3-beta/main.lua", true))()
 ```
