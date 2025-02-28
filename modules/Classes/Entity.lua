@@ -1,4 +1,4 @@
-local localPlayer = cloneref(game:GetService("Players")).LocalPlayer
+local localPlayer = cloneref(game:GetService("Players").LocalPlayer)
 
 type EntityImpl = {
 	__index: EntityImpl,
