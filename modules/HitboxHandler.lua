@@ -216,12 +216,12 @@ local function addEntity(entity: Entity)
 
 		entity:hitboxStep()
 
-		local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+		local humanoid = entity:GetHumanoid()
 		local startTime = tick()
 		while not humanoid and tick() - startTime <= 2 do
 			task.wait()
 			--print("addUpdateEvents loop")
-			humanoid = character:FindFirstChildWhichIsA("Humanoid")
+			humanoid = entity:GetHumanoid()
 			--print("checking humanoid:", humanoid ~= nil)
 		end
 		if humanoid then
