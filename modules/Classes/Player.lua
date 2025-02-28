@@ -4,7 +4,7 @@ type PlayerImpl = {
 	__index: PlayerImpl,
 	new: (plr: Player) -> PlayerEnt,
 }
-type PlayerEnt = typeof(setmetatable({} :: typeof(Entity), {} :: PlayerImpl))
+export type PlayerEnt = typeof(setmetatable({} :: typeof(Entity), {} :: PlayerImpl))
 
 local basePlayer: PlayerImpl = {} :: PlayerImpl
 basePlayer.__index = basePlayer

@@ -19,7 +19,7 @@ type EntityImpl = {
 	isSitting: (self: Entity) -> boolean,
 	isTeammate: (self: Entity) -> boolean,
 }
-type Entity = typeof(setmetatable({} :: { instance: Instance }, {} :: EntityImpl))
+export type Entity = typeof(setmetatable({} :: { instance: Instance }, {} :: EntityImpl))
 
 local Entity: EntityImpl = {} :: EntityImpl
 Entity.__index = Entity

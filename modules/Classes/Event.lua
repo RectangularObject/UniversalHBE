@@ -3,7 +3,7 @@ type ConnectionImpl = {
 	new: (callback: (...any) -> ...any) -> Connection,
 	Disconnect: (self: Connection) -> (),
 }
-type Connection = typeof(setmetatable({} :: {}, {} :: ConnectionImpl))
+export type Connection = typeof(setmetatable({} :: {}, {} :: ConnectionImpl))
 
 local baseConnection: ConnectionImpl = {} :: ConnectionImpl
 baseConnection.__index = baseConnection
@@ -23,7 +23,7 @@ type EventImpl = {
 	Connect: (self: Event, callback: (...any) -> ...any) -> Connection,
 	Fire: (self: Event, ...any) -> (),
 }
-type Event = typeof(setmetatable({} :: {}, {} :: EventImpl))
+export type Event = typeof(setmetatable({} :: {}, {} :: EventImpl))
 
 local baseEvent: EventImpl = {} :: EventImpl
 baseEvent.__index = baseEvent
