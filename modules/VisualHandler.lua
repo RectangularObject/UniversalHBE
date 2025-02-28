@@ -28,8 +28,8 @@ local visualHandler = {
 	ignoreSelectedTeams = false,
 	ignoreTeamList = {},
 }
-type Entity = typeof(require("./Classes/Entity.lua").new(Instance.new("Model"))) & { nameEsp: DrawingText, chams: Highlight | nil, espStep: (Entity) -> () }
-local function addEntity(entity: Entity)
+type EntityClass = typeof(require("./Classes/Entity.lua").new(Instance.new("Model"))) & { nameEsp: DrawingText, chams: Highlight | nil, espStep: (EntityClass) -> () }
+local function addEntity(entity: EntityClass)
 	local nameEsp: DrawingText = Drawing.new("Text")
 	nameEsp.Center = true
 	nameEsp.Outline = true
@@ -102,7 +102,7 @@ local function addEntity(entity: Entity)
 		end
 	end
 end
-local function removeEntity(entity: Entity)
+local function removeEntity(entity: EntityClass)
 	if entity.nameEsp then entity.nameEsp:Destroy() end
 	if entity.chams then entity.chams:Destroy() end
 end

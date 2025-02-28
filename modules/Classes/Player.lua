@@ -2,9 +2,9 @@ local Entity = require("./Entity.lua")
 
 type PlayerImpl = {
 	__index: PlayerImpl,
-	new: (plr: Player) -> PlayerEnt,
+	new: (plr: Player) -> PlayerClass,
 }
-export type PlayerEnt = typeof(setmetatable({} :: typeof(Entity), {} :: PlayerImpl))
+export type PlayerClass = typeof(setmetatable({} :: typeof(Entity), {} :: PlayerImpl))
 
 local basePlayer: PlayerImpl = {} :: PlayerImpl
 basePlayer.__index = basePlayer

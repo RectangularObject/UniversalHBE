@@ -2,24 +2,24 @@ local localPlayer = cloneref(game:GetService("Players").LocalPlayer)
 
 type EntityImpl = {
 	__index: EntityImpl,
-	new: (ent: Instance) -> Entity,
-	GetType: (self: Entity) -> string,
-	GetCharacter: (self: Entity) -> Model?,
-	WaitForCharacter: (self: Entity) -> Model,
-	GetName: (self: Entity) -> string,
-	GetDisplayName: (self: Entity) -> string,
-	GetPosition: (self: Entity) -> Vector3?,
-	GetCFrame: (self: Entity) -> CFrame?,
-	GetHumanoid: (self: Entity) -> Humanoid?,
-	GetRootPart: (self: Entity) -> BasePart?,
-	GetTeam: (self: Entity) -> Team?,
-	GetTeamColor: (self: Entity) -> Color3,
-	isDead: (self: Entity) -> boolean,
-	isFFed: (self: Entity) -> boolean,
-	isSitting: (self: Entity) -> boolean,
-	isTeammate: (self: Entity) -> boolean,
+	new: (ent: Instance) -> EntityClass,
+	GetType: (self: EntityClass) -> string,
+	GetCharacter: (self: EntityClass) -> Model?,
+	WaitForCharacter: (self: EntityClass) -> Model,
+	GetName: (self: EntityClass) -> string,
+	GetDisplayName: (self: EntityClass) -> string,
+	GetPosition: (self: EntityClass) -> Vector3?,
+	GetCFrame: (self: EntityClass) -> CFrame?,
+	GetHumanoid: (self: EntityClass) -> Humanoid?,
+	GetRootPart: (self: EntityClass) -> BasePart?,
+	GetTeam: (self: EntityClass) -> Team?,
+	GetTeamColor: (self: EntityClass) -> Color3,
+	isDead: (self: EntityClass) -> boolean,
+	isFFed: (self: EntityClass) -> boolean,
+	isSitting: (self: EntityClass) -> boolean,
+	isTeammate: (self: EntityClass) -> boolean,
 }
-export type Entity = typeof(setmetatable({} :: { instance: Instance }, {} :: EntityImpl))
+export type EntityClass = typeof(setmetatable({} :: { instance: Instance }, {} :: EntityImpl))
 
 local Entity: EntityImpl = {} :: EntityImpl
 Entity.__index = Entity
