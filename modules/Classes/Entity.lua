@@ -1,11 +1,12 @@
 local localPlayer = cloneref(game:GetService("Players").LocalPlayer)
 
 type EntityImpl = {
-	__index: EntityImpl,
-	new: (ent: Instance) -> EntityClass,
+	__index: EntityImpl | any, -- stupid workaround for inheritance, no autocomplete within .new
+
+	instance: Instance,
+
 	GetType: (self: EntityClass) -> string,
 	GetCharacter: (self: EntityClass) -> Model?,
-	WaitForCharacter: (self: EntityClass) -> Model,
 	GetName: (self: EntityClass) -> string,
 	GetDisplayName: (self: EntityClass) -> string,
 	GetPosition: (self: EntityClass) -> Vector3?,
@@ -14,20 +15,26 @@ type EntityImpl = {
 	GetRootPart: (self: EntityClass) -> BasePart?,
 	GetTeam: (self: EntityClass) -> Team?,
 	GetTeamColor: (self: EntityClass) -> Color3,
+
 	isDead: (self: EntityClass) -> boolean,
 	isFFed: (self: EntityClass) -> boolean,
 	isSitting: (self: EntityClass) -> boolean,
 	isTeammate: (self: EntityClass) -> boolean,
 }
-export type EntityClass = typeof(setmetatable({} :: { instance: Instance }, {} :: EntityImpl))
 
+local module = {}
 local Entity: EntityImpl = {} :: EntityImpl
 Entity.__index = Entity
 
-function Entity.new(entity) return setmetatable({ instance = entity }, Entity) end
+export type EntityClass = typeof(setmetatable({} :: EntityImpl, {} :: EntityImpl))
+
+function module.new(entity: Instance): EntityClass
+	local self = setmetatable({}, Entity)
+	self.instance = entity
+	return self
+end
 function Entity:GetType() return self.instance.ClassName end
 function Entity:GetCharacter() return self.instance end
-function Entity:WaitForCharacter() return self:GetCharacter() end
 function Entity:GetName() return tostring(self:GetCharacter()) end
 function Entity:GetDisplayName() return self:GetName() end
 function Entity:GetPosition()
@@ -66,4 +73,4 @@ function Entity:isSitting()
 end
 function Entity:isTeammate() return localPlayer.Team == self:GetTeam() end
 
-return Entity
+return module

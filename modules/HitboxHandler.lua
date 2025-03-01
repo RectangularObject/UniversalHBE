@@ -24,14 +24,14 @@ local hitboxHandler = {
 	ignoreTeamList = {} :: { [string]: boolean },
 }
 
-type EntityClass = typeof(require("./Classes/Entity.lua").new(Instance.new("Model"))) & {
+type Entity = typeof(require("./Classes/Entity.lua").new(...)) & {
 	oldProperties: {
 		[Instance]: { debounce: boolean, Size: Vector3?, Transparency: number?, Massless: boolean?, CanCollide: boolean?, Scale: Vector3?, TextureID: string?, CageMeshId: string? },
 	},
 	dumpsters: { [Instance]: typeof(Dumpster.new()) },
-	hitboxStep: (EntityClass) -> (),
+	hitboxStep: (Entity) -> (),
 }
-local function addEntity(entity: EntityClass)
+local function addEntity(entity: Entity)
 	entity.oldProperties = {}
 	entity.dumpsters = {}
 
@@ -250,7 +250,7 @@ local function addEntity(entity: EntityClass)
 		playerConnectionDumpster:dump(player:GetPropertyChangedSignal("Team"):Connect(function() entity:hitboxStep() end))
 	end
 end
-local function removeEntity(entity: EntityClass)
+local function removeEntity(entity: Entity)
 	entity.oldProperties = {}
 	for _, dumpster in entity.dumpsters do
 		dumpster:burn()
@@ -278,7 +278,7 @@ function hitboxHandler:updatePartList(list: { string })
 	end
 end
 function hitboxHandler:updateHitbox()
-	for _, player: EntityClass in EntHandler:GetPlayers() do
+	for _, player: Entity in EntHandler:GetPlayers() do
 		player:hitboxStep()
 	end
 end
@@ -295,7 +295,7 @@ function hitboxHandler:Unload()
 	for _, connection in eventConnections do
 		connection:Disconnect()
 	end
-	for _, player: EntityClass in EntHandler:GetPlayers() do
+	for _, player: Entity in EntHandler:GetPlayers() do
 		removeEntity(player)
 	end
 end

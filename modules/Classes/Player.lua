@@ -1,24 +1,24 @@
 local Entity = require("./Entity.lua")
 
-type PlayerImpl = {
+type PlayerImpl = Entity.EntityClass & {
 	__index: PlayerImpl,
-	new: (plr: Player) -> PlayerClass,
 }
-export type PlayerClass = typeof(setmetatable({} :: typeof(Entity), {} :: PlayerImpl))
 
-local basePlayer: PlayerImpl = {} :: PlayerImpl
-basePlayer.__index = basePlayer
-setmetatable(basePlayer, Entity)
+local module = {}
+local Player: PlayerImpl = {} :: PlayerImpl
+Player.__index = Player
+setmetatable(Player, Entity)
 
-function basePlayer.new(plr)
-	local player = Entity.new(plr)
-	return setmetatable(player, basePlayer)
+export type PlayerClass = typeof(setmetatable({} :: PlayerImpl, {} :: PlayerImpl))
+
+function module.new(plr: Player): PlayerClass
+	local self = Entity.new(plr)
+	return setmetatable(self, Player)
 end
-function basePlayer:GetName() return self.instance.Name end
-function basePlayer:GetDisplayName() return self.instance.DisplayName end
-function basePlayer:GetCharacter() return self.instance.Character end
-function basePlayer:WaitForCharacter() return self:GetCharacter() or self.instance.CharacterAdded:Wait() end
-function basePlayer:GetTeam() return self.instance.Team end
-function basePlayer:GetTeamColor() return self.instance.TeamColor.Color end
+function Player:GetName() return self.instance.Name end
+function Player:GetDisplayName() return self.instance.DisplayName end
+function Player:GetCharacter() return self.instance.Character end
+function Player:GetTeam() return self.instance.Team end
+function Player:GetTeamColor() return self.instance.TeamColor.Color end
 
-return basePlayer
+return module

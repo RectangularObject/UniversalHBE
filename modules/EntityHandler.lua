@@ -12,19 +12,19 @@ local playerList = {}
 local entityList = {}
 local connections = {}
 
-local function PlayerAdded(plr)
+local function PlayerAdded(plr: Player)
 	playerList[plr] = Player.new(plr)
 	entityHandler.PlayerAdded:Fire(playerList[plr])
 end
-local function PlayerRemoving(plr)
+local function PlayerRemoving(plr: Player)
 	entityHandler.PlayerRemoving:Fire(playerList[plr])
 	playerList[plr] = nil
 end
-local function EntityAdded(ent)
+local function EntityAdded(ent: Model)
 	entityList[ent] = Entity.new(ent)
 	entityHandler.EntityAdded:Fire(entityList[ent])
 end
-local function EntityRemoving(ent)
+local function EntityRemoving(ent: Model)
 	entityHandler.EntityRemoving:Fire(entityList[ent])
 	entityList[ent] = nil
 end

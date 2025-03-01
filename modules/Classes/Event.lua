@@ -1,46 +1,54 @@
 type ConnectionImpl = {
 	__index: ConnectionImpl,
-	new: (callback: (...any) -> ...any) -> Connection,
+
+	callback: (...any) -> (),
+
 	Disconnect: (self: Connection) -> (),
 }
-export type Connection = typeof(setmetatable({} :: {}, {} :: ConnectionImpl))
+export type Connection = typeof(setmetatable({} :: ConnectionImpl, {} :: ConnectionImpl))
 
-local baseConnection: ConnectionImpl = {} :: ConnectionImpl
-baseConnection.__index = baseConnection
+local EventConnection = {}
+local Connection: ConnectionImpl = {} :: ConnectionImpl
+Connection.__index = Connection
 
-function baseConnection.new(callback)
-	local connection = setmetatable({ callback = callback }, baseConnection)
-	return connection
+function EventConnection.new(callback: (...any) -> ()): Connection
+	local self = setmetatable({}, Connection)
+	self.callback = callback
+	return self
 end
-function baseConnection:Disconnect()
+function Connection:Disconnect()
 	self.callback = nil
 	self = nil
 end
 
 type EventImpl = {
 	__index: EventImpl,
-	new: () -> Event,
+
+	connections: { Connection },
+
 	Connect: (self: Event, callback: (...any) -> ...any) -> Connection,
 	Fire: (self: Event, ...any) -> (),
 }
-export type Event = typeof(setmetatable({} :: {}, {} :: EventImpl))
+export type Event = typeof(setmetatable({} :: EventImpl, {} :: EventImpl))
 
-local baseEvent: EventImpl = {} :: EventImpl
-baseEvent.__index = baseEvent
+local module = {}
+local Event: EventImpl = {} :: EventImpl
+Event.__index = Event
 
-function baseEvent.new()
-	local event = setmetatable({ connections = {} }, baseEvent)
-	return event
+function module.new(): Event
+	local self = setmetatable({}, Event)
+	self.connections = {}
+	return self
 end
-function baseEvent:Connect(callback)
-	local connection = baseConnection.new(callback)
+function Event:Connect(callback)
+	local connection = EventConnection.new(callback)
 	table.insert(self.connections, connection)
 	return connection
 end
-function baseEvent:Fire(...)
+function Event:Fire(...)
 	for _, connection in self.connections do
 		connection.callback(...)
 	end
 end
 
-return baseEvent
+return module
