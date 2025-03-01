@@ -1,7 +1,8 @@
 local localPlayer = cloneref(game:GetService("Players").LocalPlayer)
 
 type EntityImpl = {
-	__index: EntityImpl | any, -- stupid workaround for inheritance, no autocomplete within .new
+	__index: EntityImpl | any, -- stupid workaround for inheritance
+	new: (entity: Instance) -> EntityClass,
 
 	instance: Instance,
 
@@ -28,8 +29,8 @@ Entity.__index = Entity
 
 export type EntityClass = typeof(setmetatable({} :: EntityImpl, {} :: EntityImpl))
 
-function module.new(entity: Instance): EntityClass
-	local self = setmetatable({}, Entity)
+function Entity.new(entity)
+	local self = setmetatable({}, Entity) :: EntityClass
 	self.instance = entity
 	return self
 end
@@ -73,4 +74,4 @@ function Entity:isSitting()
 end
 function Entity:isTeammate() return localPlayer.Team == self:GetTeam() end
 
-return module
+return Entity
