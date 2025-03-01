@@ -18,7 +18,7 @@ local visualHandler = {
 	chamsFillTransparency = 0,
 	chamsOutlineColor = Color3.fromRGB(255, 255, 255),
 	chamsOutlineTransparency = 0,
-	chamsDepthMode = Enum.HighlightDepthMode.AlwaysOnTop,
+	chamsDepthMode = Enum.HighlightDepthMode.Occluded,
 
 	ignoreTeammates = false,
 	ignoreFF = false,
@@ -42,7 +42,7 @@ local function addEntity(entity: EntityClass)
 	entity.chams = nil
 
 	local function hideEsp() nameEsp.Visible = false end
-	local function updateEsp(pos)
+	local function updateEsp(pos: Vector3)
 		nameEsp.Text = if visualHandler.nameType == 2 then entity:GetDisplayName() else entity:GetName()
 		nameEsp.Color = if visualHandler.nameUseTeamColor then entity:GetTeamColor() else visualHandler.nameFillColor
 		nameEsp.OutlineColor = visualHandler.nameOutlineColor
