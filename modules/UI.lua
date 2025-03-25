@@ -117,7 +117,11 @@ function UI:Load()
 		ExcludeLocalPlayer = true,
 	})
 	local ignoreSelectedTeams = ignoresGroup:AddToggle("ignoreSelectedTeams", { Text = "Ignore Selected Teams" })
-	local ignoreTeamList = ignoresGroup:AddDropdown("ignoreTeamList", { Text = "Teams", Multi = true, SpecialType = "Team" })
+	local ignoreTeamList = ignoresGroup:AddDropdown("ignoreTeamList", {
+		Text = "Teams",
+		Multi = true,
+		SpecialType = "Team",
+	})
 
 	ignoreTeammates:OnChanged(function(value)
 		VisualHandler.ignoreTeammates = value
@@ -168,16 +172,17 @@ function UI:Load()
 		v.Callback = HitboxHandler.updateHitbox
 	end
 
-	UI.Library:OnUnload(function()
-		hitboxToggle:SetValue(false)
-		HitboxHandler:Unload()
-		VisualHandler:Unload()
-		EntityHandler:Unload()
-		getgenv().FurryHBE = nil
+	local onTeleport = game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(teleportState)
+		if teleportState == Enum.TeleportState.InProgress then LinoriaLib.Unload() end
 	end)
 
-	game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(teleportState)
-		if teleportState == Enum.TeleportState.InProgress then LinoriaLib.Unload() end
+	UI.Library:OnUnload(function()
+		hitboxToggle:SetValue(false)
+		EntityHandler:Unload()
+		HitboxHandler:Unload()
+		VisualHandler:Unload()
+		onTeleport:Disconnect()
+		getgenv().FurryHBE = nil
 	end)
 
 	LinoriaLib.ToggleKeybind = UI.Options.menuKeybind

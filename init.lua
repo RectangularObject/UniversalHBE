@@ -13,7 +13,7 @@ VisualHandler:Load()
 HitboxHandler:Load()
 EntityHandler:Load()
 
-HitboxHandler.updateHitbox()
+HitboxHandler:updateHitbox()
 
 UI.Library:Notify("hai :3")
 UI.Library:Notify(`Press {UI.Library.ToggleKeybind.Value} to open the menu`)

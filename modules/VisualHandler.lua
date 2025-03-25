@@ -29,12 +29,12 @@ local visualHandler = {
 	ignoreTeamList = {},
 }
 
-type EntityClass = typeof(require("./Classes/Entity.lua").new(...)) & {
+type EntityObj = typeof(require("./Classes/Entity.lua").new(...)) & {
 	nameEsp: DrawingText,
 	chams: Highlight | nil,
-	espStep: (EntityClass) -> (),
+	espStep: (EntityObj) -> (),
 }
-local function addEntity(entity: EntityClass)
+local function addEntity(entity: EntityObj)
 	local nameEsp: DrawingText = Drawing.new("Text")
 	nameEsp.Center = true
 	nameEsp.Outline = true
@@ -75,23 +75,23 @@ local function addEntity(entity: EntityClass)
 		hideEsp()
 		hideChams()
 	end
-	function entity:espStep()
-		if self:isDead() then
+	function entity.espStep()
+		if entity:isDead() then
 			hideEspAndChams()
 			return
 		end
-		local pos, vis = WorldToViewportPoint(Camera, self:GetPosition())
+		local pos, vis = WorldToViewportPoint(Camera, entity:GetPosition())
 		if not vis then
 			hideEspAndChams()
 			return
 		end
 		-- stylua: ignore start
 		local validTarget = (
-				if visualHandler.ignoreTeammates       and self:isTeammate()                                      then false
-			elseif visualHandler.ignoreFF              and self:isFFed()                                          then false
-			elseif visualHandler.ignoreSitting         and self:isSitting()                                       then false
-			elseif visualHandler.ignoreSelectedPlayers and visualHandler.ignorePlayerList[self:GetName()]         then false
-			elseif visualHandler.ignoreSelectedTeams   and visualHandler.ignoreTeamList[tostring(self:GetTeam())] then false
+				if visualHandler.ignoreTeammates       and entity:isTeammate()                                      then false
+			elseif visualHandler.ignoreFF              and entity:isFFed()                                          then false
+			elseif visualHandler.ignoreSitting         and entity:isSitting()                                       then false
+			elseif visualHandler.ignoreSelectedPlayers and visualHandler.ignorePlayerList[entity:GetName()]         then false
+			elseif visualHandler.ignoreSelectedTeams   and visualHandler.ignoreTeamList[tostring(entity:GetTeam())] then false
 			else true
 		)
 		-- stylua: ignore end
@@ -107,36 +107,40 @@ local function addEntity(entity: EntityClass)
 		end
 	end
 end
-local function removeEntity(entity: EntityClass)
+local function removeEntity(entity: EntityObj)
 	if entity.nameEsp then entity.nameEsp:Destroy() end
 	if entity.chams then entity.chams:Destroy() end
 end
 
 function visualHandler:Load()
-	for _, entity in EntHandler:GetPlayers() do
+	for _, player in EntHandler:GetPlayers() do
+		addEntity(player)
+	end
+	for _, entity in EntHandler:GetEntities() do
 		addEntity(entity)
 	end
 	table.insert(connections, EntHandler.PlayerAdded:Connect(addEntity))
+	table.insert(connections, EntHandler.EntityAdded:Connect(addEntity))
 	table.insert(connections, EntHandler.PlayerRemoving:Connect(removeEntity))
+	table.insert(connections, EntHandler.EntityRemoving:Connect(removeEntity))
 	table.insert(connections, Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() Camera = Workspace.CurrentCamera end))
 	RunService:BindToRenderStep("furryESP", Enum.RenderPriority.Camera.Value - 1, function()
 		for _, player in EntHandler:GetPlayers() do
-			task.spawn(player.espStep, player)
+			task.spawn(player.espStep)
 		end
 	end)
 end
 function visualHandler:Unload()
+	for _, player in EntHandler:GetPlayers() do
+		removeEntity(player)
+	end
 	for _, connection in connections do
 		connection:Disconnect()
 	end
 	RunService:UnbindFromRenderStep("furryESP")
-	for _, player in EntHandler:GetPlayers() do
-		removeEntity(player)
-	end
+	self = nil
 end
 
 return visualHandler
 
---[[
-TODO: rewrite this to only update properties when needed (like the hitbox handler)
-]]
+-- TODO: rewrite this and make it look better

@@ -1,19 +1,16 @@
-local classes = {
-	Entity = require("./Classes/Entity.lua"),
-	Player = require("./Classes/Player.lua"),
-}
+local Entity = require("./Classes/Entity.lua")
+local Player = require("./Classes/Player.lua")
 
-local overrides = {}
+local overrides = {
+	--[[ [1430993116] = function() -- a literal baseplate
+		Player.OverrideMethod("GetName", function(self): () return "my name is david" end)
+		Player.OverrideMethod("GetDisplayName", function(self): () return "my name is edwin" end)
+	end, ]]
+}
 
 local override = overrides[game.GameId]
 if override then
-	for class, funcs in override do
-		for func, callback in funcs do
-			classes[class][func] = callback
-		end
-	end
+	override()
 	return true
 end
 return false
-
--- TODO: figure out how the hell I'm gonna make this work with the new additions to HitboxHandler.lua

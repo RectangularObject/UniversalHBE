@@ -28,6 +28,7 @@ type EventImpl = {
 
 	Connect: (self: Event, callback: (...any) -> ...any) -> Connection,
 	Fire: (self: Event, ...any) -> (),
+	Destroy: (self: Event) -> (),
 }
 export type Event = typeof(setmetatable({} :: EventImpl, {} :: EventImpl))
 
@@ -49,6 +50,12 @@ function Event:Fire(...)
 	for _, connection in self.connections do
 		connection.callback(...)
 	end
+end
+function Event:Destroy()
+	for _, connection in self.connections do
+		connection:Disconnect()
+	end
+	self = nil
 end
 
 return module
