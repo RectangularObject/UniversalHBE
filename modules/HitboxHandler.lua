@@ -216,7 +216,7 @@ end
 function hitboxHandler:updatePartList(list: { string })
 	hitboxHandler.hitboxPartList = {}
 	local partMap: { [string]: { string } } = {
-		["Custom Part"] = { hitboxHandler.customPartName },
+		["Custom Part"] = string.split(hitboxHandler.customPartName, ","),
 		["Head"] = { "Head" },
 		["RootPart"] = { "HumanoidRootPart" },
 		["Torso"] = { "UpperTorso", "LowerTorso", "Torso" },
