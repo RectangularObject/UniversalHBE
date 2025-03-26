@@ -63,6 +63,7 @@ local function addEntity(entity: EntityObj)
 	end
 
 	local function spoofInstance(instance)
+		--print(entity:GetName(), "spoofing", tostring(instance))
 		oldProperties[instance] = {
 			debounce = false,
 		}
@@ -132,11 +133,11 @@ local function addEntity(entity: EntityObj)
 			oldInstanceProperties = nil
 			dumpster:burn()
 		end))
-		--print("spoofed:", instance)
+		--print(entity:GetName(), "spoofed", tostring(instance))
 	end
 	local function updatePart(part: BasePart, extend: boolean)
 		local oldPartProperties = oldProperties[part]
-		--print("updatePart:", extend, part)
+		--print(entity:GetName(), "updating", tostring(part), extend)
 		oldPartProperties.debounce = true
 
 		-- Parts that are too big will freeze the character if they aren't Massless
@@ -153,7 +154,7 @@ local function addEntity(entity: EntityObj)
 
 		for _, child in pairs(part:GetChildren()) do
 			if child:IsA("Decal") then
-				--print("updateDecal:", child)
+				--print(entity:GetName(), "updateDecal", tostring(child))
 				local oldDecalProperties = oldProperties[child]
 				oldDecalProperties.debounce = true
 
@@ -161,7 +162,7 @@ local function addEntity(entity: EntityObj)
 
 				oldDecalProperties.debounce = false
 			elseif child:IsA("SpecialMesh") and child.MeshType == Enum.MeshType.FileMesh then
-				--print("updateMesh:", child)
+				--print(entity:GetName(), "updateMesh", tostring(child))
 				local oldMeshProperties = oldProperties[child]
 				oldMeshProperties.debounce = true
 
@@ -171,7 +172,7 @@ local function addEntity(entity: EntityObj)
 
 				oldMeshProperties.debounce = false
 			elseif child:IsA("BaseWrap") then -- dynamic clothing
-				--print("updateWrap:", child)
+				--print(entity:GetName(), "updateWrap", tostring(child))
 				local oldWrapProperties = oldProperties[child]
 				oldWrapProperties.debounce = true
 
@@ -181,10 +182,11 @@ local function addEntity(entity: EntityObj)
 				oldWrapProperties.debounce = false
 			end
 		end
+		--print(entity:GetName(), "update done", tostring(part), extend)
 	end
 
 	function entity.hitboxStep()
-		--print("hitboxStep:", self:GetName())
+		--print(entity:GetName(), "hitboxStep:")
 		local character = entity:GetCharacter()
 		if not character then
 			--print("character not found")
