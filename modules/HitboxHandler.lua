@@ -33,17 +33,18 @@ local entityInstanceDumpsters: { [EntityObj]: { [Instance]: typeof(Dumpster.new(
 local function addEntity(entity: EntityObj)
 	local oldProperties: {
 		[Instance]: {
-			debounce: boolean,
 			Size: Vector3?,
 			Transparency: number?,
 			Massless: boolean?,
 			CanCollide: boolean?,
 			Scale: Vector3?,
 			TextureID: string?,
+			TextureId: string?,
 			CageMeshId: string?,
 		},
 	} = -- stylua is weird
 		{}
+	local propertyDebounces: { [Instance]: { [string]: boolean } } = {}
 	entityInstanceDumpsters[entity] = {}
 	local instanceDumpsters = entityInstanceDumpsters[entity]
 
@@ -62,124 +63,89 @@ local function addEntity(entity: EntityObj)
 		-- stylua: ignore end
 	end
 
+	local function updateProperty(part: Instance, property: string, value: any)
+		--print("\t" .. property, value)
+		propertyDebounces[part][property] = true
+		part[property] = value
+		-- have to defer the debounce because of a race condition with the changed event
+		task.defer(function() propertyDebounces[part][property] = false end)
+	end
 	local function spoofInstance(instance)
 		--print(entity:GetName(), "spoofing", tostring(instance))
-		oldProperties[instance] = {
-			debounce = false,
-		}
-		instanceDumpsters[instance] = Dumpster.new()
+		propertyDebounces[instance] = {}
+		local instancePropertyDebounces = propertyDebounces[instance]
+		oldProperties[instance] = {}
 		local oldInstanceProperties = oldProperties[instance]
+		instanceDumpsters[instance] = Dumpster.new()
 		local dumpster = instanceDumpsters[instance]
 
 		local propertyMap = {
-			["Size"] = function(_, value)
-				oldInstanceProperties.Size = value
-				return if isValidPart(instance) and isValidTarget() then hitboxHandler.hitboxSize else value
-			end,
-			["size"] = function(_, value)
-				oldInstanceProperties.Size = value
-				return if isValidPart(instance) and isValidTarget() then hitboxHandler.hitboxSize else value
-			end,
-			["Transparency"] = function(_, value)
-				oldInstanceProperties.Transparency = value
-				return if isValidPart(instance) and isValidTarget() then hitboxHandler.hitboxTransparency else value
-			end,
-			["Massless"] = function(_, value)
-				oldInstanceProperties.Massless = value
-				return if isValidPart(instance) and isValidTarget() then instance ~= entity:GetRootPart() else value
-			end,
-			["CanCollide"] = function(_, value)
-				oldInstanceProperties.CanCollide = value
-				return if isValidPart(instance) and isValidTarget() then hitboxHandler.hitboxCanCollide else value
-			end,
-			["Scale"] = function(_, value)
-				oldInstanceProperties.Scale = value
-				return if isValidPart(instance) and isValidTarget() then hitboxHandler.hitboxSize else value
-			end,
-			["TextureID"] = function(_, value) -- MeshPart
-				oldInstanceProperties.TextureID = value
-				return if isValidPart(instance) and isValidTarget() then "" else value
-			end,
-			["TextureId"] = function(_, value) -- FileMesh
-				oldInstanceProperties.TextureID = value
-				return if isValidPart(instance) and isValidTarget() then "" else value
-			end,
-			["CageMeshId"] = function(_, value) -- BaseWrap
-				oldInstanceProperties.CageMeshId = value
-				return if isValidPart(instance) and isValidTarget() then "" else value
-			end,
+			["Size"] = function() return hitboxHandler.hitboxSize end,
+			["size"] = function() return hitboxHandler.hitboxSize end,
+			["Transparency"] = function() return hitboxHandler.hitboxTransparency end,
+			["Massless"] = function() return instance ~= entity:GetRootPart() end,
+			["CanCollide"] = function() return hitboxHandler.hitboxCanCollide end,
+			["Scale"] = function() return hitboxHandler.hitboxSize end,
+			["TextureID"] = function() return "" end, -- MeshPart
+			["TextureId"] = function() return "" end, -- FileMesh
+			["CageMeshId"] = function() return "" end, -- BaseWrap
 		}
 		for property, callback in propertyMap do
-			if not pcall(function() return not instance[property] end) then continue end -- ohh noo a single pcall this code is TRASH
-			--print("\t" .. tostring(instance), property, instance[property])
+			if not pcall(function() return not instance[property] end) then continue end -- ohh noo a pcall this code is TRASH
+			--print("\t" .. property, instance[property])
 			oldInstanceProperties[property] = instance[property]
 			dumpster:dump(instance:AddGetHook(property, function() return oldInstanceProperties[property] end))
-			dumpster:dump(instance:AddSetHook(property, callback))
+			dumpster:dump(instance:AddSetHook(property, function(oldValue, newValue): any
+				oldInstanceProperties[property] = newValue
+				return if isValidPart(instance) and isValidTarget() then callback() else newValue
+			end))
 			if not pcall(function() return instance:GetPropertyChangedSignal(property) end) then continue end -- a second pcall has hit the hitbox extender this SUCKS
 			dumpster:dump(instance:GetPropertyChangedSignal(property):Connect(function() -- Serverscripts don't trigger hooks when setting properties
-				if not oldInstanceProperties.debounce then
-					--print(entity:GetName(), "changed event", tostring(instance), property, instance[property])
-					oldInstanceProperties.debounce = true
-					instance[property] = callback(nil, instance[property])
-					oldInstanceProperties.debounce = false
-				else
-					--print(entity:GetName(), "debounce hit", tostring(instance))
+				if instancePropertyDebounces[property] or oldInstanceProperties[property] == instance[property] then
+					--print(entity:GetName(), "debounce hit", tostring(instance), property, instance[property])
+					return
 				end
+				--print(entity:GetName(), "changed event", tostring(instance), property, instance[property])
+				oldInstanceProperties[property] = instance[property]
+				if isValidPart(instance) and isValidTarget() then updateProperty(instance, property, callback()) end
 			end))
 		end
 
 		dumpster:dump(instance.AncestryChanged:Connect(function(_, parent)
 			if parent ~= nil then return end
-			oldInstanceProperties = nil
+			oldProperties[instance] = nil
 			dumpster:burn()
 		end))
 		--print(entity:GetName(), "spoofed", tostring(instance))
 	end
 	local function updatePart(part: BasePart, extend: boolean)
-		local oldPartProperties = oldProperties[part]
 		--print(entity:GetName(), "updating", tostring(part), extend)
-		oldPartProperties.debounce = true
+		local oldPartProperties = oldProperties[part]
 
 		-- Parts that are too big will freeze the character if they aren't Massless
 		-- Setting the RootPart to Massless will also freeze the character
-		part.Massless = if extend then part ~= entity:GetRootPart() else oldPartProperties.Massless
-		part.CanCollide = if extend then hitboxHandler.hitboxCanCollide else oldPartProperties.CanCollide
-		part.Size = if extend then hitboxHandler.hitboxSize else oldPartProperties.Size
+		updateProperty(part, "Massless", if extend then part ~= entity:GetRootPart() else oldPartProperties.Massless)
+		updateProperty(part, "CanCollide", if extend then hitboxHandler.hitboxCanCollide else oldPartProperties.CanCollide)
+		updateProperty(part, "Size", if extend then hitboxHandler.hitboxSize else oldPartProperties.Size)
 		-- Some textures cause the part to go invisible when transparency > 0, so nuke them all
-		if part:IsA("FileMesh") then part.TextureID = if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldPartProperties.TextureID end
-		part.Transparency = if extend then hitboxHandler.hitboxTransparency else oldPartProperties.Transparency
-
-		-- have to defer the debounce because of a race condition with the changed event
-		task.defer(function() oldPartProperties.debounce = false end)
+		if part:IsA("FileMesh") then updateProperty(part, "TextureID", if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldPartProperties.TextureID) end
+		updateProperty(part, "Transparency", if extend then hitboxHandler.hitboxTransparency else oldPartProperties.Transparency)
 
 		for _, child in pairs(part:GetChildren()) do
+			local oldChildProperties = oldProperties[child]
+			if not oldChildProperties then continue end
 			if child:IsA("Decal") then
 				--print(entity:GetName(), "updateDecal", tostring(child))
-				local oldDecalProperties = oldProperties[child]
-				oldDecalProperties.debounce = true
-
-				child.Transparency = if extend then hitboxHandler.hitboxTransparency else oldDecalProperties.Transparency
-
-				oldDecalProperties.debounce = false
+				updateProperty(child, "Transparency", if extend then hitboxHandler.hitboxTransparency else oldChildProperties.Transparency)
 			elseif child:IsA("SpecialMesh") and child.MeshType == Enum.MeshType.FileMesh then
 				--print(entity:GetName(), "updateMesh", tostring(child))
-				local oldMeshProperties = oldProperties[child]
-				oldMeshProperties.debounce = true
-
-				child.TextureId = if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldMeshProperties.TextureId
+				updateProperty(child, "TextureId", if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldChildProperties.TextureId)
 				-- FileMesh doesn't care about the size of the part, so we have to change the scale of the mesh too
-				child.Scale = if extend then hitboxHandler.hitboxSize else oldMeshProperties.Scale
-
-				oldMeshProperties.debounce = false
+				updateProperty(child, "Scale", if extend then hitboxHandler.hitboxSize else oldChildProperties.Scale)
 			elseif child:IsA("BaseWrap") then -- dynamic clothing
 				--print(entity:GetName(), "updateWrap", tostring(child))
-				local oldWrapProperties = oldProperties[child]
-				oldWrapProperties.debounce = true
-
 				-- Can't set the transparency of this, so nuke it too
-				child.CageMeshId = if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldWrapProperties.CageMeshId
-
-				oldWrapProperties.debounce = false
+				updateProperty(child, "CageMeshId", if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldChildProperties.CageMeshId)
 			end
 		end
 		--print(entity:GetName(), "update done", tostring(part), extend)
