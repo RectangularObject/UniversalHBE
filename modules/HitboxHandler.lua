@@ -215,6 +215,11 @@ local function addEntity(entity: EntityObj)
 
 	entity.hitboxStep()
 end
+local function removeEntity(entity: EntityObj)
+	for _, dumpster in entityInstanceDumpsters[entity] do
+		dumpster:burn()
+	end
+end
 
 function hitboxHandler:updatePartList(list: { string })
 	hitboxHandler.hitboxPartList = {}
@@ -251,7 +256,9 @@ function hitboxHandler:Load()
 		addEntity(entity)
 	end
 	table.insert(eventConnections, EntHandler.PlayerAdded:Connect(addEntity))
+	table.insert(eventConnections, EntHandler.PlayerRemoving:Connect(removeEntity))
 	table.insert(eventConnections, EntHandler.EntityAdded:Connect(addEntity))
+	table.insert(eventConnections, EntHandler.EntityRemoving:Connect(removeEntity))
 	table.insert(eventConnections, game:GetService("Players").LocalPlayer:GetPropertyChangedSignal("Team"):Connect(hitboxHandler.updateHitbox))
 end
 function hitboxHandler:Unload()
