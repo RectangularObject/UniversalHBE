@@ -80,6 +80,10 @@ local function addEntity(entity: EntityObj)
 			hideEspAndChams()
 			return
 		end
+		if not Camera then
+			hideEspAndChams()
+			return
+		end
 		local pos, vis = WorldToViewportPoint(Camera, entity:GetPosition())
 		if not vis then
 			hideEspAndChams()
