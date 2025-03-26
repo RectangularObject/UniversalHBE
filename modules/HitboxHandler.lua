@@ -108,23 +108,25 @@ local function addEntity(entity: EntityObj)
 				return if isValidPart(instance) and isValidTarget() then "" else value
 			end,
 		}
-		for property, v in propertyMap do
+		for property, callback in propertyMap do
 			if not pcall(function() return not instance[property] end) then continue end -- ohh noo a single pcall this code is TRASH
+			--print("\t" .. tostring(instance), property, instance[property])
 			oldInstanceProperties[property] = instance[property]
 			dumpster:dump(instance:AddGetHook(property, function() return oldInstanceProperties[property] end))
-			dumpster:dump(instance:AddSetHook(property, v))
+			dumpster:dump(instance:AddSetHook(property, callback))
+			if not pcall(function() return instance:GetPropertyChangedSignal(property) end) then continue end -- a second pcall has hit the hitbox extender this SUCKS
+			dumpster:dump(instance:GetPropertyChangedSignal(property):Connect(function() -- Serverscripts don't trigger hooks when setting properties
+				if not oldInstanceProperties.debounce then
+					--print(entity:GetName(), "changed event", tostring(instance), property, instance[property])
+					oldInstanceProperties.debounce = true
+					instance[property] = callback(nil, instance[property])
+					oldInstanceProperties.debounce = false
+				else
+					--print(entity:GetName(), "debounce hit", tostring(instance))
+				end
+			end))
 		end
 
-		-- Serverscripts don't trigger hooks when setting properties
-		dumpster:dump(instance.Changed:Connect(function(property)
-			if oldInstanceProperties.debounce then return end -- Prevent our own modifications from affecting oldInstanceProperties
-			if oldInstanceProperties[property] and oldInstanceProperties[property] ~= instance[property] then
-				oldInstanceProperties[property] = instance[property]
-				oldInstanceProperties.debounce = true
-				instance[property] = propertyMap[property](nil, instance[property])
-				oldInstanceProperties.debounce = false
-			end
-		end))
 		dumpster:dump(instance.AncestryChanged:Connect(function(_, parent)
 			if parent ~= nil then return end
 			oldInstanceProperties = nil
@@ -146,7 +148,8 @@ local function addEntity(entity: EntityObj)
 		if part:IsA("FileMesh") then part.TextureID = if extend and hitboxHandler.hitboxTransparency > 0 then "" else oldPartProperties.TextureID end
 		part.Transparency = if extend then hitboxHandler.hitboxTransparency else oldPartProperties.Transparency
 
-		oldPartProperties.debounce = false
+		-- have to defer the debounce because of a race condition with the changed event
+		task.defer(function() oldPartProperties.debounce = false end)
 
 		for _, child in pairs(part:GetChildren()) do
 			if child:IsA("Decal") then
