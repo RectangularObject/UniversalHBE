@@ -117,12 +117,6 @@ local function removeEntity(entity: EntityObj)
 end
 
 function visualHandler:Load()
-	for _, player in EntHandler:GetPlayers() do
-		addEntity(player)
-	end
-	for _, entity in EntHandler:GetEntities() do
-		addEntity(entity)
-	end
 	table.insert(connections, EntHandler.PlayerAdded:Connect(addEntity))
 	table.insert(connections, EntHandler.EntityAdded:Connect(addEntity))
 	table.insert(connections, EntHandler.PlayerRemoving:Connect(removeEntity))

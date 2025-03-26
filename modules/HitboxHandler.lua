@@ -217,12 +217,6 @@ end
 -- TODO: change this to use a dumpster instead (implement custom event support to dumpster)
 local eventConnections: { RBXScriptConnection | typeof(EntHandler.PlayerAdded:Connect(function() end)) } = {}
 function hitboxHandler:Load()
-	for _, player in EntHandler:GetPlayers() do
-		addEntity(player)
-	end
-	for _, entity in EntHandler:GetEntities() do
-		addEntity(entity)
-	end
 	table.insert(eventConnections, EntHandler.PlayerAdded:Connect(addEntity))
 	table.insert(eventConnections, EntHandler.PlayerRemoving:Connect(removeEntity))
 	table.insert(eventConnections, EntHandler.EntityAdded:Connect(addEntity))
