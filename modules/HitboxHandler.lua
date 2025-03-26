@@ -141,7 +141,7 @@ local function addEntity(entity: EntityObj)
 
 		-- Parts that are too big will freeze the character if they aren't Massless
 		-- Setting the RootPart to Massless will also freeze the character
-		part.Massless = if part ~= entity:GetRootPart() then extend else oldPartProperties.Massless
+		part.Massless = if extend then part ~= entity:GetRootPart() else oldPartProperties.Massless
 		part.CanCollide = if extend then hitboxHandler.hitboxCanCollide else oldPartProperties.CanCollide
 		part.Size = if extend then hitboxHandler.hitboxSize else oldPartProperties.Size
 		-- Some textures cause the part to go invisible when transparency > 0, so nuke them all
