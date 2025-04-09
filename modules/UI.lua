@@ -20,7 +20,7 @@ local UI = {
 
 function UI:Load()
 	local mainWindow = LinoriaLib:CreateWindow({
-		Title = "Universal Hitbox Extender v3.2.2-beta",
+		Title = "Universal Hitbox Extender v3.3.0-beta",
 		TabPadding = 6,
 		MenuFadeTime = 0,
 		Size = UDim2.fromOffset(550, 620),
