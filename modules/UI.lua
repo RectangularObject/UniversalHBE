@@ -35,7 +35,7 @@ function UI:Load()
 	hitboxToggle:OnChanged(function(value) HitboxHandler.extendHitbox = value end)
 	collisionsToggle:OnChanged(function(value) HitboxHandler.hitboxCanCollide = value end)
 
-	local hitboxSize = hitboxGroup:AddSlider("hitboxSize", { Text = "Size", Min = 2, Max = 100, Default = 5, Rounding = 2 })
+	local hitboxSize = hitboxGroup:AddSlider("hitboxSize", { Text = "Size", Min = 2, Max = 100, Default = 5, Rounding = 1 })
 	local hitboxTransparency = hitboxGroup:AddSlider("hitboxTransparency", { Text = "Transparency", Min = 0, Max = 1, Default = 0.5, Rounding = 2 })
 	local customPartName = hitboxGroup:AddInput("customPartName", { Text = "Custom Part Name", Default = "HeadHB" })
 	local hitboxPartList = hitboxGroup:AddDropdown("hitboxPartList", {
