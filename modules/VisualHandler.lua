@@ -124,7 +124,7 @@ function visualHandler:Load()
 	table.insert(connections, Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() Camera = Workspace.CurrentCamera end))
 	RunService:BindToRenderStep("furryESP", Enum.RenderPriority.Camera.Value - 1, function()
 		for _, player in EntHandler:GetPlayers() do
-			task.spawn(player.espStep)
+			if player.espStep then task.spawn(player.espStep) end
 		end
 	end)
 end
